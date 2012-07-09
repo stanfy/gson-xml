@@ -146,7 +146,6 @@
            includeantruntime="false"
            >
       <classpath>
-      	<path refid="compile.classpath" />
         <fileset dir="${output.artifacts}" includes="*.jar" />
       </classpath>
     </javac>
@@ -155,7 +154,6 @@
     <junit haltonerror="true" haltonfailure="true" fork="true" showoutput="true" printsummary="true">
       <formatter type="xml"/>
       <classpath>
-        <path refid="compile.classpath" />
       	<fileset dir="${output.artifacts}" includes="*.jar" />
         <pathelement location="${output.temp.classes}/test" />
       </classpath>
