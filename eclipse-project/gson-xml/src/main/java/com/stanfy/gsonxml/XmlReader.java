@@ -67,6 +67,7 @@ public class XmlReader extends JsonReader {
     }
   }
 
+  @SuppressWarnings("unused")
   private void dump(final boolean showToken) {
     for (int i = 0; i < stackSize; i++) {
       System.out.print(stack[i] + " ");
@@ -78,6 +79,7 @@ public class XmlReader extends JsonReader {
     }
     System.out.println(tokensQueueStart);
     System.out.println(valuesQueueStart);
+    System.out.println("----------------------");
   }
 
   private JsonToken peekNextToken() { return tokensQueueStart != null ? tokensQueueStart.token : null; }
@@ -181,8 +183,8 @@ public class XmlReader extends JsonReader {
         }
       }
 
-      System.out.println("===== adapted =====");
-      dump(true);
+//      System.out.println("===== adapted =====");
+//      dump(true);
     }
   }
 
@@ -342,8 +344,7 @@ public class XmlReader extends JsonReader {
       }
       if (xml == null) { continue; }
 
-      System.out.println("------------");
-      System.out.println(xml);
+//      System.out.println(xml);
 
       switch (xml.type) {
       case XmlPullParser.START_TAG:
@@ -363,7 +364,7 @@ public class XmlReader extends JsonReader {
       default:
       }
 
-      dump(false);
+//      dump(false);
 
       if (skipping) { break; }
     }
