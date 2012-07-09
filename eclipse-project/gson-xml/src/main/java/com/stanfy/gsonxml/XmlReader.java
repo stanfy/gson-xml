@@ -186,8 +186,8 @@ public class XmlReader extends JsonReader {
         }
       }
 
-      System.out.println("===== adapted =====");
-      dump(true);
+//      System.out.println("===== adapted =====");
+//      dump(true);
     }
   }
 
@@ -347,7 +347,7 @@ public class XmlReader extends JsonReader {
       }
       if (xml == null) { continue; }
 
-      System.out.println(xml);
+//      System.out.println(xml);
 
       switch (xml.type) {
       case XmlPullParser.START_TAG:
@@ -367,7 +367,7 @@ public class XmlReader extends JsonReader {
       default:
       }
 
-      dump(false);
+//      dump(false);
 
       if (skipping) { break; }
     }
