@@ -15,6 +15,9 @@ import com.google.gson.stream.JsonToken;
  */
 public class XmlReader extends JsonReader {
 
+  /** Internal token type. */
+  private static final int START_TAG = 1, END_TAG = 2, VALUE = 3;
+
   /** Scope. */
   private static enum Scope {
     /** We are inside an object. Next token should be {@link JsonToken#NAME} or {@link JsonToken#END_OBJECT}. */
@@ -186,8 +189,8 @@ public class XmlReader extends JsonReader {
         }
       }
 
-//      System.out.println("===== adapted =====");
-//      dump(true);
+      System.out.println("===== adapted =====");
+      dump(true);
     }
   }
 
@@ -254,16 +257,15 @@ public class XmlReader extends JsonReader {
 
 
   private XmlTokenInfo nextXmlInfo() throws IOException, XmlPullParserException {
-    final int type = xmlParser.next();
+    final int type = xmlParser.nextToken();
 
-    if (type == XmlPullParser.TEXT && xmlParser.isWhitespace()) { return null; }
-
-    final XmlTokenInfo info = new XmlTokenInfo();
-    info.type = type;
+    final XmlTokenInfo info;
 
     switch (type) {
 
     case XmlPullParser.START_TAG:
+      info = new XmlTokenInfo();
+      info.type = START_TAG;
       info.name = xmlParser.getName();
       info.ns = xmlParser.getNamespace();
       final int aCount = xmlParser.getAttributeCount();
@@ -275,20 +277,28 @@ public class XmlReader extends JsonReader {
       break;
 
     case XmlPullParser.END_TAG:
+      info = new XmlTokenInfo();
+      info.type = END_TAG;
       info.name = xmlParser.getName();
       info.ns = xmlParser.getNamespace();
       break;
 
+    case XmlPullParser.CDSECT:
     case XmlPullParser.TEXT:
-      info.value = xmlParser.getText();
+      final String text = xmlParser.getText().trim();
+      if (text.length() == 0) { return null; }
+      info = new XmlTokenInfo();
+      info.type = VALUE;
+      info.value = text;
       break;
+
 
     case XmlPullParser.END_DOCUMENT:
       endReached = true;
-      break;
+      // fall through
 
     default:
-      throw new IllegalStateException("Cannot process token type = " + type);
+      info = null;
     }
 
     return info;
@@ -347,10 +357,10 @@ public class XmlReader extends JsonReader {
       }
       if (xml == null) { continue; }
 
-//      System.out.println(xml);
+      System.out.println(xml);
 
       switch (xml.type) {
-      case XmlPullParser.START_TAG:
+      case START_TAG:
         if (firstStart) {
           firstStart = false;
           processRoot(xml);
@@ -358,16 +368,16 @@ public class XmlReader extends JsonReader {
           processStart(xml);
         }
         break;
-      case XmlPullParser.TEXT:
+      case VALUE:
         processText(xml);
         break;
-      case XmlPullParser.END_TAG:
+      case END_TAG:
         processEnd(xml);
         break;
       default:
       }
 
-//      dump(false);
+      dump(false);
 
       if (skipping) { break; }
     }
@@ -549,7 +559,7 @@ public class XmlReader extends JsonReader {
     @Override
     public String toString() {
       return "xml "
-          + (type == XmlPullParser.START_TAG ? "start" : type == XmlPullParser.END_TAG ? "end" : type)
+          + (type == START_TAG ? "start" : type == END_TAG ? "end" : "value")
           + " <" + ns + ":" + name + ">=" + value + (attributesData != null ? ", " + attributesData : "");
     }
 

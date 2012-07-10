@@ -149,6 +149,9 @@
         <fileset dir="${output.artifacts}" includes="*.jar" />
       </classpath>
     </javac>
+		<copy todir="${output.temp.classes}/test">
+			<fileset dir="${src.test.java}" includes="**/*.xml" />
+	  </copy>
 
 		<echo message="Testing..."/>
     <junit haltonerror="true" haltonfailure="true" fork="true" showoutput="true" printsummary="true">
@@ -168,5 +171,11 @@
     </junit>
     <echo message="SUCCESS"/>
 	</target>
+
+	<target name="build-and-copy" depends="build" if="destproject.home">
+		<copy todir="${destproject.home}/libs" overwrite="true">
+      <fileset dir="${output.artifacts}" includes="${ant.project.name}.jar" />
+		</copy>
+  </target>
 	
 </project>
