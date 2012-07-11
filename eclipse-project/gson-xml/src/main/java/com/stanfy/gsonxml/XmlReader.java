@@ -165,6 +165,8 @@ public class XmlReader extends JsonReader {
     if (expectedToken == JsonToken.BEGIN_ARRAY && token == JsonToken.BEGIN_OBJECT) {
       token = JsonToken.BEGIN_ARRAY;
 
+      final Scope lastScope = stack[stackSize - 1];
+
       stackSize -= 3;
       if (stackSize < 0) { stackSize = 0; }
 
@@ -175,7 +177,9 @@ public class XmlReader extends JsonReader {
 
           push(Scope.INSIDE_EMEDDED_ARRAY);
           push(Scope.INSIDE_OBJECT);
-          push(Scope.NAME);
+          if (lastScope == Scope.NAME) {
+            push(Scope.NAME);
+          }
         } else {
           // ignore name
           nextToken();
