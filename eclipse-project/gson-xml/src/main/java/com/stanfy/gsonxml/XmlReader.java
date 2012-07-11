@@ -43,7 +43,7 @@ public class XmlReader extends JsonReader {
   private JsonToken expectedToken;
 
   /** State. */
-  private boolean endReached, firstStart = true;
+  private boolean endReached, firstStart = true, lastTextWiteSpace = false;
 
   private JsonToken token;
 
@@ -286,7 +286,11 @@ public class XmlReader extends JsonReader {
     case XmlPullParser.CDSECT:
     case XmlPullParser.TEXT:
       final String text = xmlParser.getText().trim();
-      if (text.length() == 0) { return null; }
+      if (text.length() == 0) {
+        lastTextWiteSpace = true;
+        return null;
+      }
+      lastTextWiteSpace = false;
       info = new XmlTokenInfo();
       info.type = VALUE;
       info.value = text;
@@ -498,6 +502,10 @@ public class XmlReader extends JsonReader {
       break;
 
     case NAME:
+      if (lastTextWiteSpace) {
+        addToQueue(JsonToken.STRING);
+        addToQueue("");
+      }
       fixScopeStack();
       break;
 
