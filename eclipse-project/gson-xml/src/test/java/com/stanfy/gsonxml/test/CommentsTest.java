@@ -61,34 +61,3 @@ public class CommentsTest extends AbstractXmlTest {
   }
 
 }
-/*
-----------------------
-xml start <:comment>=null, com.stanfy.gsonxml.XmlReader$AttributesData@1bbb60c3
-INSIDE_OBJECT NAME INSIDE_OBJECT NAME INSIDE_OBJECT
-NAME, BEGIN_OBJECT, NAME, STRING, NAME, STRING, NAME, STRING, null
-comment, @id, 18239321, @level, 1, @date, 11.07.2012 17:35:16+0300, null
-----------------------
-===== adapted =====
-INSIDE_OBJECT NAME INSIDE_EMEDDED_ARRAY INSIDE_OBJECT
-BEGIN_ARRAY, BEGIN_OBJECT, NAME, STRING, NAME, STRING, NAME, STRING, null
-@id, 18239321, @level, 1, @date, 11.07.2012 17:35:16+0300, null
-----------------------
-
-
-07-11 20:41:31.947: I/System.out(2092): ----------------------
-07-11 20:41:31.947: I/System.out(2092): xml start <:comment>=null, com.stanfy.gsonxml.XmlReader$AttributesData@b4834148
-07-11 20:41:31.947: I/System.out(2092): INSIDE_OBJECT NAME INSIDE_OBJECT NAME INSIDE_OBJECT
-07-11 20:41:31.947: I/System.out(2092): NAME, BEGIN_OBJECT, NAME, STRING, NAME, STRING, NAME, STRING, null
-07-11 20:41:31.947: I/System.out(2092): comment, @id, 18239321, @level, 1, @date, 11.07.2012 17:35:16+0300, null
-07-11 20:41:31.947: I/System.out(2092): ----------------------
-07-11 20:41:31.947: I/System.out(2092): ===== adapted =====
-07-11 20:41:31.947: I/System.out(2092): INSIDE_OBJECT NAME INSIDE_ARRAY INSIDE_OBJECT
-07-11 20:41:31.947: I/System.out(2092): BEGIN_ARRAY, BEGIN_OBJECT, STRING, NAME, STRING, NAME, STRING, null
-07-11 20:41:31.947: I/System.out(2092): 18239321, @level, 1, @date, 11.07.2012 17:35:16+0300, null
-07-11 20:41:31.947: I/System.out(2092): ----------------------
-
-
- *
- *
- */
- */
