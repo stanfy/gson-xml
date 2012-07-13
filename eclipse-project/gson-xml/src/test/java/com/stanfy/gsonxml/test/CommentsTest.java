@@ -52,6 +52,14 @@ public class CommentsTest extends AbstractXmlTest {
     assertEquals(2, response.data.comments.get(1).level);
   }
 
+  @Test
+  public void realTest2() throws Exception {
+    final Response response = createGsonXml().fromXml(new InputStreamReader(CommentsTest.class.getResourceAsStream("comments-response-2.xml"), "UTF-8"), Response.class);
+    assertEquals(0, response.status.code);
+    assertEquals("article", response.data.category);
+    assertEquals(1194, response.data.total);
+  }
+
   private GsonXml createGsonXml() {
     return new GsonXmlBuilder()
         .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
