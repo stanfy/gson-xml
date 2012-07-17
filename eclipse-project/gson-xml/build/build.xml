@@ -133,6 +133,12 @@
     </copy>
 	</target>
 
+	<target name="sources" depends="-prepare-output">
+		<jar destfile="${output.artifacts}/${ant.project.name}-sources.jar">
+			<fileset dir="${src.main.java}" />
+		</jar>
+	</target>
+	
   <!--
     Target: Build.
   -->
@@ -172,10 +178,13 @@
     <echo message="SUCCESS"/>
 	</target>
 
-	<target name="build-and-copy" depends="build" if="destproject.home">
+	<target name="build-and-copy" depends="build, sources" if="destproject.home">
 		<copy todir="${destproject.home}/libs" overwrite="true">
       <fileset dir="${output.artifacts}" includes="${ant.project.name}.jar" />
 		</copy>
+    <copy todir="${destproject.home}/libs/src" overwrite="true" failonerror="false">
+      <fileset dir="${output.artifacts}" includes="${ant.project.name}-sources.jar" />
+    </copy>
   </target>
 	
 </project>
