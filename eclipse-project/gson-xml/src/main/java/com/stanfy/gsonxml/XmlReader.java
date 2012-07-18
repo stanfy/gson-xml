@@ -216,7 +216,7 @@ public class XmlReader extends JsonReader {
       return token = nextToken();
 
     } catch (final XmlPullParserException e) {
-      throw new IOException("XML parsing exception", e);
+      throw new IOException("XML parsing exception: " + e.getMessage());
     }
   }
 
