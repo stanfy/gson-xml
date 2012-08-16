@@ -16,7 +16,7 @@ import com.google.gson.stream.JsonToken;
 public class XmlReader extends JsonReader {
 
   /** Internal token type. */
-  private static final int START_TAG = 1, END_TAG = 2, VALUE = 3;
+  private static final int START_TAG = 1, END_TAG = 2, VALUE = 3, IGNORE = -1;
 
   /** Scope. */
   private static enum Scope {
@@ -57,11 +57,15 @@ public class XmlReader extends JsonReader {
 
   private boolean skipping;
 
+  /** Last XML token info. */
+  private final XmlTokenInfo xmlToken = new XmlTokenInfo();
+
   public XmlReader(final Reader in, final XmlParserCreator creator, final boolean skipRoot, final boolean namespaces, final boolean sameNameList) {
     super(in);
     this.xmlParser = creator.createParser();
     this.skipRoot = skipRoot;
     this.sameNameList = sameNameList;
+    this.xmlToken.type = IGNORE;
     try {
       this.xmlParser.setInput(in);
       this.xmlParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, namespaces);
@@ -263,12 +267,12 @@ public class XmlReader extends JsonReader {
   private XmlTokenInfo nextXmlInfo() throws IOException, XmlPullParserException {
     final int type = xmlParser.nextToken();
 
-    final XmlTokenInfo info;
+    final XmlTokenInfo info = this.xmlToken;
+    info.clear();
 
     switch (type) {
 
     case XmlPullParser.START_TAG:
-      info = new XmlTokenInfo();
       info.type = START_TAG;
       info.name = xmlParser.getName();
       info.ns = xmlParser.getNamespace();
@@ -281,7 +285,6 @@ public class XmlReader extends JsonReader {
       break;
 
     case XmlPullParser.END_TAG:
-      info = new XmlTokenInfo();
       info.type = END_TAG;
       info.name = xmlParser.getName();
       info.ns = xmlParser.getNamespace();
@@ -292,10 +295,10 @@ public class XmlReader extends JsonReader {
       final String text = xmlParser.getText().trim();
       if (text.length() == 0) {
         lastTextWiteSpace = true;
-        return null;
+        info.type = IGNORE;
+        return info;
       }
       lastTextWiteSpace = false;
-      info = new XmlTokenInfo();
       info.type = VALUE;
       info.value = text;
       break;
@@ -306,7 +309,7 @@ public class XmlReader extends JsonReader {
       // fall through
 
     default:
-      info = null;
+      info.type = IGNORE;
     }
 
     return info;
@@ -363,7 +366,7 @@ public class XmlReader extends JsonReader {
         if (!skipRoot) { addToQueue(JsonToken.END_OBJECT); }
         break;
       }
-      if (xml == null) { continue; }
+      if (xml.type == IGNORE) { continue; }
 
 //      System.out.println(xml);
 
@@ -567,6 +570,14 @@ public class XmlReader extends JsonReader {
     String name, value, ns;
 
     AttributesData attributesData;
+
+    public void clear() {
+      type = IGNORE;
+      name = null;
+      value = null;
+      ns = null;
+      attributesData = null;
+    }
 
     @Override
     public String toString() {
