@@ -60,6 +60,9 @@ public class XmlReader extends JsonReader {
   /** Last XML token info. */
   private final XmlTokenInfo xmlToken = new XmlTokenInfo();
 
+  /** Attributes. */
+  private final AttributesData attributes = new AttributesData(10);
+
   public XmlReader(final Reader in, final XmlParserCreator creator, final boolean skipRoot, final boolean namespaces, final boolean sameNameList) {
     super(in);
     this.xmlParser = creator.createParser();
@@ -278,7 +281,6 @@ public class XmlReader extends JsonReader {
       info.ns = xmlParser.getNamespace();
       final int aCount = xmlParser.getAttributeCount();
       if (aCount > 0) {
-        final AttributesData attributes = new AttributesData(aCount);
         attributes.fill(xmlParser);
         info.attributesData = attributes;
       }
@@ -349,7 +351,7 @@ public class XmlReader extends JsonReader {
     }
   }
   private void addToQueue(final AttributesData attrData) throws IOException, XmlPullParserException {
-    final int count = attrData.names.length;
+    final int count = attrData.count;
     for (int i = 0; i < count; i++) {
       addToQueue(JsonToken.NAME);
       addToQueue("@" + attrData.getName(i));
@@ -592,16 +594,27 @@ public class XmlReader extends JsonReader {
   }
 
   private static final class AttributesData {
-    final String[] names, values, ns;
+    String[] names, values, ns;
 
-    public AttributesData(final int count) {
-      this.names = new String[count];
-      this.values = new String[count];
-      this.ns = new String[count];
+    int count = 0;
+
+    public AttributesData(final int capacity) {
+      createArrays(capacity);
+    }
+
+    private void createArrays(final int capacity) {
+      this.names = new String[capacity];
+      this.values = new String[capacity];
+      this.ns = new String[capacity];
     }
 
     public void fill(final XmlPullParser parser) {
-      final int aCount = names.length;
+      final int aCount = parser.getAttributeCount();
+      if (aCount > names.length) {
+        createArrays(aCount);
+      }
+
+      count = aCount;
       for (int i = 0; i < aCount; i++) {
         names[i] = parser.getAttributeName(i);
         ns[i] = parser.getAttributePrefix(i);
