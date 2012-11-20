@@ -3,7 +3,7 @@ GsonXml
 
 GsonXml is a small library that allows to use Google Gson library for XML deserialization.
 The main idea is to convert a stream of XML pull parser events to a stream of JSON tokens.
-It's implemented by passing a custom `JsonReader` that wraps `XmlPullParsers` to Gson.
+It's implemented by passing a custom `JsonReader` (that wraps `XmlPullParsers`) to Gson.
 
 Though currently this library is not pretending to be the most efficient library for 
 XML deserialization, it can be very useful.
