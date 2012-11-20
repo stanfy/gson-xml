@@ -7,9 +7,9 @@ import org.junit.Test;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import com.google.gson.GsonXml;
-import com.google.gson.GsonXmlBuilder;
 import com.google.gson.annotations.SerializedName;
+import com.stanfy.gsonxml.GsonXml;
+import com.stanfy.gsonxml.GsonXmlBuilder;
 import com.stanfy.gsonxml.XmlParserCreator;
 import com.stanfy.gsonxml.XmlReader;
 

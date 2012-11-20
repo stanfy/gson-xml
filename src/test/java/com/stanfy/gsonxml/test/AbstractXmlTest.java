@@ -4,7 +4,7 @@ import static com.stanfy.gsonxml.test.SimpleXmlReaderTest.createGson;
 
 import org.junit.BeforeClass;
 
-import com.google.gson.GsonXml;
+import com.stanfy.gsonxml.GsonXml;
 
 /**
  * Base class for tests.

@@ -9,8 +9,9 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.google.gson.GsonXml;
-import com.google.gson.GsonXmlBuilder;
+import com.google.gson.GsonBuilder;
+import com.stanfy.gsonxml.GsonXml;
+import com.stanfy.gsonxml.GsonXmlBuilder;
 
 
 public class RssTest extends AbstractXmlTest {
@@ -57,8 +58,10 @@ public class RssTest extends AbstractXmlTest {
 
   private GsonXml createGsonXml() {
     return new GsonXmlBuilder()
+        .wrap(
+            new GsonBuilder().setDateFormat("EEE, dd MMM yyyy HH:mm:ss Z")
+         )
         .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
-        .setDateFormat("EEE, dd MMM yyyy HH:mm:ss Z")
         .create();
   }
 

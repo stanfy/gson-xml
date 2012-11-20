@@ -8,9 +8,10 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.google.gson.GsonXml;
-import com.google.gson.GsonXmlBuilder;
+import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
+import com.stanfy.gsonxml.GsonXml;
+import com.stanfy.gsonxml.GsonXmlBuilder;
 
 
 public class CommentsTest extends AbstractXmlTest {
@@ -62,8 +63,10 @@ public class CommentsTest extends AbstractXmlTest {
 
   private GsonXml createGsonXml() {
     return new GsonXmlBuilder()
+        .wrap(
+            new GsonBuilder().setDateFormat("dd.MM.yyyy HH:mm:ssZ")
+         )
         .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
-        .setDateFormat("dd.MM.yyyy HH:mm:ssZ")
         .setSameNameLists(true)
         .create();
   }

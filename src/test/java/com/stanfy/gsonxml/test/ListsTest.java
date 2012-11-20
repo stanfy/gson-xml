@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.google.gson.GsonXmlBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
+import com.stanfy.gsonxml.GsonXmlBuilder;
 
 
 /**

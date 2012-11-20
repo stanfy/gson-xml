@@ -1,17 +1,17 @@
-package com.google.gson;
+package com.stanfy.gsonxml;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Type;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.Primitives;
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.MalformedJsonException;
-import com.stanfy.gsonxml.XmlParserCreator;
-import com.stanfy.gsonxml.XmlReader;
 
 /**
  * Wrapper for {@link Gson}.
@@ -38,69 +38,7 @@ public final class GsonXml {
     this.sameNameLists = sameNameLists;
   }
 
-  /**
-   * Returns the type adapter for {@code} type.
-   * @throws IllegalArgumentException if this GSON cannot serialize and
-   *     deserialize {@code type}.
-   */
-  public <T> TypeAdapter<T> getAdapter(final TypeToken<T> type) { return core.getAdapter(type); }
-
-  /**
-   * This method is used to get an alternate type adapter for the specified type. This is used
-   * to access a type adapter that is overridden by a {@link TypeAdapterFactory} that you
-   * may have registered. This features is typically used when you want to register a type
-   * adapter that does a little bit of work but then delegates further processing to the Gson
-   * default type adapter. Here is an example:
-   * <p>Let's say we want to write a type adapter that counts the number of objects being read
-   *  from or written to JSON. We can achieve this by writing a type adapter factory that uses
-   *  the <code>getDelegateAdapter</code> method:
-   *  <pre> {@code
-   *  class StatsTypeAdapterFactory implements TypeAdapterFactory {
-   *    public int numReads = 0;
-   *    public int numWrites = 0;
-   *    public &lt;T&gt; TypeAdapter&lt;T&gt; create(Gson gson, TypeToken&lt;T&gt; type) {
-   *      final TypeAdapter&lt;T&gt; delegate = gson.getDelegateAdapter(this, type);
-   *      return new TypeAdapter&lt;T&gt;() {
-   *        public void write(JsonWriter out, T value) throws IOException {
-   *          ++numWrites;
-   *          delegate.write(out, value);
-   *        }
-   *        public T read(JsonReader in) throws IOException {
-   *          ++numReads;
-   *          return delegate.read(in);
-   *        }
-   *      };
-   *    }
-   *  }
-   *  } </pre>
-   *  This factory can now be used like this:
-   *  <pre> {@code
-   *  StatsTypeAdapterFactory stats = new StatsTypeAdapterFactory();
-   *  Gson gson = new GsonBuilder().registerTypeAdapterFactory(stats).create();
-   *  // Call gson.toJson() and fromJson methods on objects
-   *  System.out.println("Num JSON reads" + stats.numReads);
-   *  System.out.println("Num JSON writes" + stats.numWrites);
-   *  }</pre>
-   *  Note that since you can not override type adapter factories for String and Java primitive
-   *  types, our stats factory will not count the number of String or primitives that will be
-   *  read or written.
-   * @param skipPast The type adapter factory that needs to be skipped while searching for
-   *   a matching type adapter. In most cases, you should just pass <i>this</i> (the type adapter
-   *   factory from where {@link getDelegateAdapter} method is being invoked).
-   * @param type Type for which the delegate adapter is being searched for.
-   *
-   */
-  public <T> TypeAdapter<T> getDelegateAdapter(final TypeAdapterFactory skipPast, final TypeToken<T> type) {
-    return core.getDelegateAdapter(skipPast, type);
-  }
-
-  /**
-   * Returns the type adapter for {@code} type.
-   *
-   * @throws IllegalArgumentException if this GSON cannot serialize and
-   *     deserialize {@code type}.
-   */
-  public <T> TypeAdapter<T> getAdapter(final Class<T> type) { return core.getAdapter(type); }
+  public Gson getGson() { return core; }
 
   public <T> T fromXml(final String json, final Class<T> classOfT) throws JsonSyntaxException {
     final Object object = fromXml(json, (Type) classOfT);

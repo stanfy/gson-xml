@@ -7,8 +7,8 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.google.gson.GsonXmlBuilder;
 import com.google.gson.annotations.SerializedName;
+import com.stanfy.gsonxml.GsonXmlBuilder;
 
 
 public class SOTest extends AbstractXmlTest {
