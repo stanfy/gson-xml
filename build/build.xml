@@ -178,13 +178,17 @@
     <echo message="SUCCESS"/>
 	</target>
 
-	<target name="build-and-copy" depends="build, sources" if="destproject.home">
-		<copy todir="${destproject.home}/libs" overwrite="true">
-      <fileset dir="${output.artifacts}" includes="${ant.project.name}.jar" />
+	<target name="release" depends="test" description="Create release package">
+		<mkdir dir="${build.app}/libs" />
+		<copy todir="${build.app}/libs">
+      <fileset dir="${output.artifacts}" excludes="junit*, ${ant.project.name}*" />
 		</copy>
-    <copy todir="${destproject.home}/libs/src" overwrite="true" failonerror="false">
-      <fileset dir="${output.artifacts}" includes="${ant.project.name}-sources.jar" />
-    </copy>
+		<copy todir="${build.app}">
+      <fileset dir="${output.artifacts}" includes="${ant.project.name}*" />
+		</copy>
+		<zip destfile="${build.releases}/${ant.project.name}-${release.version}-release.zip">
+      <fileset dir="${build.app}" />
+		</zip>
   </target>
 	
 </project>
