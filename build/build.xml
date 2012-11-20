@@ -104,7 +104,7 @@
     target: Pack Main
   -->
   <target name="-pack-main">
-    <jar jarfile="${output.temp.jars}/${ant.project.name}.jar">
+    <jar jarfile="${output.temp.jars}/${ant.project.name}-${release.version}.jar">
       <fileset dir="${output.temp.classes}/main" />
     </jar>
   </target>
@@ -134,7 +134,7 @@
 	</target>
 
 	<target name="sources" depends="-prepare-output">
-		<jar destfile="${output.artifacts}/${ant.project.name}-sources.jar">
+		<jar destfile="${output.artifacts}/${ant.project.name}-${release.version}-sources.jar">
 			<fileset dir="${src.main.java}" />
 		</jar>
 	</target>
