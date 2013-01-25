@@ -110,6 +110,15 @@
   </target>
 
   <!--
+    target: Pack Sources
+  -->
+  <target name="-pack-sources">
+    <jar jarfile="${output.temp.jars}/${ant.project.name}-${release.version}-sources.jar">
+      <fileset dir="${src.main.java}" />
+    </jar>
+  </target>
+
+  <!--
     goal: Clean
   -->
   <target name="clean" description="--> clean the project">
@@ -120,7 +129,7 @@
   <!--
     Target: Build.
   -->
-  <target name="build" depends="-prepare-output, -compile-main, -pack-main" 
+  <target name="build" depends="-prepare-output, -compile-main, -pack-main, -pack-sources" 
   	      description="--> make the build directory">
     <echo message="Forming artifacts..."/>
     <copy todir="${output.artifacts}">
