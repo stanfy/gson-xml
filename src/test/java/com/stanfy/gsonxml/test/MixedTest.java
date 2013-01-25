@@ -20,10 +20,15 @@ public class MixedTest extends AbstractXmlTest {
   /** Test xml. */
   public static final String TEST_XML =
       "<response code=\"0\" message=\"Success\">"
+    + "  <ignore ignore=\"ignore\"><aha/></ignore>"
     + "  <person name=\"Guy\" age=\"23\" shortDescription=\"\">"
-    + "    <about>A lot of interesting</about>"
+    + "    <text>lalala</text>"
+    + "    <about>"
+    + "      <![CDATA[A lot of interesting]]>"
+    + "    </about>"
     + "    What do you think about him?"
     + "  </person>"
+    + "  <ignore ignore=\"ignore\"><aha/></ignore>"
     + "  <places>"
     + "    <place id=\"1\" lat=\"0.25\" long=\"0.26\">"
     + "      <name>&lt;Place&gt;</name>"
@@ -34,6 +39,7 @@ public class MixedTest extends AbstractXmlTest {
     + "      <name>Place 2</name>"
     + "    </place>"
     + "  </places>"
+    + "  <ignore ignore=\"ignore\"><aha/></ignore>"
     + "</response>";
 
   /** Place object. */
@@ -49,6 +55,8 @@ public class MixedTest extends AbstractXmlTest {
 
     @SerializedName("$")
     String question;
+
+    String text;
   }
 
   public static class Response {

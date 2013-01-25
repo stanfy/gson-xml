@@ -362,13 +362,17 @@ public class XmlReader extends JsonReader {
 
   private void fillQueues() throws IOException, XmlPullParserException {
 
-    while (tokensQueue == null && !endReached) {
+    boolean mustRepeat = false;
+
+    while ((tokensQueue == null && !endReached) || mustRepeat) {
       final XmlTokenInfo xml = nextXmlInfo();
       if (endReached) {
         if (!skipRoot) { addToQueue(JsonToken.END_OBJECT); }
         break;
       }
       if (xml.type == IGNORE) { continue; }
+
+      mustRepeat = false;
 
 //      System.out.println(xml);
 
@@ -382,7 +386,7 @@ public class XmlReader extends JsonReader {
         }
         break;
       case VALUE:
-        processText(xml);
+        mustRepeat = processText(xml);
         break;
       case END_TAG:
         processEnd(xml);
@@ -465,8 +469,12 @@ public class XmlReader extends JsonReader {
     }
   }
 
-  private void processText(final XmlTokenInfo xml) {
+  private boolean processText(final XmlTokenInfo xml) {
     switch (stack[stackSize - 1]) {
+
+    case NAME:
+      addTextToQueue(xml.value, true);
+      return true;
 
     case INSIDE_OBJECT:
       String name = "$";
@@ -477,8 +485,19 @@ public class XmlReader extends JsonReader {
       // fall-through
 
     default:
+      addTextToQueue(xml.value, false);
+      return false;
+    }
+  }
+
+  private void addTextToQueue(final String value, final boolean insideName) {
+    if (insideName && tokensQueue != null && tokensQueue.token == JsonToken.STRING) {
+      if (value.length() > 0) {
+        valuesQueue.value += " " + value;
+      }
+    } else {
       addToQueue(JsonToken.STRING);
-      addToQueue(xml.value);
+      addToQueue(value);
     }
   }
 
@@ -512,8 +531,7 @@ public class XmlReader extends JsonReader {
 
     case NAME:
       if (lastTextWiteSpace) {
-        addToQueue(JsonToken.STRING);
-        addToQueue("");
+        addTextToQueue("", true);
       }
       fixScopeStack();
       break;
