@@ -51,7 +51,8 @@ Usage
 Download
 --------
 
-[Zip](https://s3.amazonaws.com/OS-libraries/gson-xml/gson-xml-0.1.1-release.zip) that contains all the required binaries and main source. 
+[Zip](https://sourceforge.net/projects/gson-xml/files/gson-xml-0.1.1-release.zip/download) that contains all the required binaries and main source
+can be downloaded from SourceForge. 
 
 
 Android Note
