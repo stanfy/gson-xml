@@ -51,8 +51,8 @@ Usage
 Download
 --------
 
-[Zip](https://github.com/downloads/stanfy/gson-xml/gson-xml-0.1-release.zip) that contains all the required binaries and main source 
-can be download at Github Downloads section. 
+[Zip](https://s3.amazonaws.com/OS-libraries/gson-xml/gson-xml-0.1.1-release.zip) that contains all the required binaries and main source. 
+
 
 Android Note
 ------------
