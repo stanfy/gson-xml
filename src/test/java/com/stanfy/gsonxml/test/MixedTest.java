@@ -22,7 +22,7 @@ public class MixedTest extends AbstractXmlTest {
       "<response code=\"0\" message=\"Success\">"
     + "  <ignore ignore=\"ignore\"><aha/></ignore>"
     + "  <person name=\"Guy\" age=\"23\" shortDescription=\"\">"
-    + "    <text>lalala</text>"
+    + "    <text></text>"
     + "    <about>"
     + "      <![CDATA[A lot of interesting]]>"
     + "    </about>"

@@ -451,11 +451,11 @@ public class XmlReader extends JsonReader {
     default:
     }
 
-    if (processTagName) {
-      // ignore tag name inside the array
+    if (processTagName) {                 // ignore tag name inside the array
       push(Scope.NAME);
       addToQueue(JsonToken.NAME);
       addToQueue(xml.getName(xmlParser));
+      lastTextWiteSpace = true;           // if tag is closed immediately we'll add empty value to the queue
     }
 
     if (xml.attributesData != null) {
