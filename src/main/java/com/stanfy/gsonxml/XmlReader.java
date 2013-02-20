@@ -452,7 +452,7 @@ public class XmlReader extends JsonReader {
       default:
       }
 
-      dump(false);
+//      dump(false);
 
       if (skipping) { break; }
     }
