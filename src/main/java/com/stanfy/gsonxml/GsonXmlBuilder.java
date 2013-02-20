@@ -1,6 +1,7 @@
 package com.stanfy.gsonxml;
 
 import com.google.gson.GsonBuilder;
+import com.stanfy.gsonxml.XmlReader.Options;
 
 /**
  * Use this builder for constructing {@link GsonXml} object. All methods are very
@@ -15,12 +16,16 @@ public class GsonXmlBuilder {
   /** Factory for XML parser. */
   private XmlParserCreator xmlParserCreator;
 
-  /** Parse option: whether to skip root element. */
-  private boolean skipRoot = true;
-  /** Parse option: whether to treat XML namespaces. */
-  private boolean treatNamespaces;
-  /** Parse option: list a created from a set of elements with the same name without a grouping element. */
-  private boolean sameNameLists;
+  /** Options. */
+  private final Options options = new Options();
+  {
+    // Parse option: whether to skip root element
+    options.skipRoot = true;
+    // Parse option: whether to treat XML namespaces.
+    options.namespaces = false;
+    // Parse option: list a created from a set of elements with the same name without a grouping element.
+    options.sameNameList = false;
+  }
 
   /**
    * @param gsonBuilder instance of {@link GsonBuilder}
@@ -59,7 +64,7 @@ public class GsonXmlBuilder {
    * @return this instance for chaining
    */
   public GsonXmlBuilder setSkipRoot(final boolean value) {
-    this.skipRoot = value;
+    this.options.skipRoot = value;
     return this;
   }
 
@@ -81,7 +86,7 @@ public class GsonXmlBuilder {
    * @return this instance for chaining
    */
   public GsonXmlBuilder setTreatNamespaces(final boolean treatNamespaces) {
-    this.treatNamespaces = treatNamespaces;
+    this.options.namespaces = treatNamespaces;
     return this;
   }
 
@@ -113,7 +118,39 @@ public class GsonXmlBuilder {
    * @return this instance for chaining
    */
   public GsonXmlBuilder setSameNameLists(final boolean sameNameLists) {
-    this.sameNameLists = sameNameLists;
+    this.options.sameNameList = sameNameLists;
+    return this;
+  }
+
+  /**
+   * If set to true than arrays can contain primitive values. If false only arrays can contain objects only.
+   * When set to true you cannot parse the next sample:
+   * <pre>
+   *   &lt;list>
+   *     &lt;item>
+   *       text node value
+   *       &lt;field-name>field value&lt;/field-name>
+   *     &lt;/item>
+   *     &lt;item>value2&lt;/item>
+   *   &lt;/list>
+   * </pre>
+   * It's caused by the fact that parser meats 'text node value' and makes a decision that this item is primitive.
+   * @param primitiveArrays value for primitive arrays policy
+   * @return this instance for chaining
+   */
+  public GsonXmlBuilder setPrimitiveArrays(final boolean primitiveArrays) {
+    this.options.primitiveArrays = primitiveArrays;
+    return this;
+  }
+
+  /**
+   * When set to true and the root element is parsed as a collection this collection items are treated as primitives.
+   * @see #setPrimitiveArrays(boolean)
+   * @param rootArrayPrimitive flag for 'root array primitive' policy
+   * @return this instance for chaining
+   */
+  public GsonXmlBuilder setRootArrayPrimitive(final boolean rootArrayPrimitive) {
+    this.options.rootArrayPrimitive = rootArrayPrimitive;
     return this;
   }
 
@@ -127,7 +164,7 @@ public class GsonXmlBuilder {
     if (coreBuilder == null) {
       coreBuilder = new GsonBuilder();
     }
-    return new GsonXml(coreBuilder.create(), xmlParserCreator, skipRoot, treatNamespaces, sameNameLists);
+    return new GsonXml(coreBuilder.create(), xmlParserCreator, options);
   }
 
 

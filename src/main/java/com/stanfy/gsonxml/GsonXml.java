@@ -12,6 +12,7 @@ import com.google.gson.internal.Primitives;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.MalformedJsonException;
+import com.stanfy.gsonxml.XmlReader.Options;
 
 /**
  * Wrapper for {@link Gson}.
@@ -26,16 +27,13 @@ public final class GsonXml {
   private final XmlParserCreator xmlParserCreator;
 
   /** Option. */
-  private final boolean skipRoot, treatNamespaces, sameNameLists;
+  private final Options options;
 
-  GsonXml(final Gson gson, final XmlParserCreator xmlParserCreator, final boolean skipRoot, final boolean namespaces,
-      final boolean sameNameLists) {
+  GsonXml(final Gson gson, final XmlParserCreator xmlParserCreator, final Options options) {
     if (xmlParserCreator == null) { throw new NullPointerException("XmlParserCreator is null"); }
     this.core = gson;
     this.xmlParserCreator = xmlParserCreator;
-    this.skipRoot = skipRoot;
-    this.treatNamespaces = namespaces;
-    this.sameNameLists = sameNameLists;
+    this.options = options;
   }
 
   public Gson getGson() { return core; }
@@ -56,7 +54,7 @@ public final class GsonXml {
   }
 
   public <T> T fromXml(final Reader json, final Class<T> classOfT) throws JsonSyntaxException, JsonIOException {
-    final XmlReader jsonReader = new XmlReader(json, xmlParserCreator, skipRoot, treatNamespaces, sameNameLists); // change reader
+    final XmlReader jsonReader = new XmlReader(json, xmlParserCreator, options); // change reader
     final Object object = fromXml(jsonReader, classOfT);
     assertFullConsumption(object, jsonReader);
     return Primitives.wrap(classOfT).cast(object);
@@ -64,7 +62,7 @@ public final class GsonXml {
 
   @SuppressWarnings("unchecked")
   public <T> T fromXml(final Reader json, final Type typeOfT) throws JsonIOException, JsonSyntaxException {
-    final XmlReader jsonReader = new XmlReader(json, xmlParserCreator, skipRoot, treatNamespaces, sameNameLists); // change reader
+    final XmlReader jsonReader = new XmlReader(json, xmlParserCreator, options); // change reader
     final T object = (T) fromXml(jsonReader, typeOfT);
     assertFullConsumption(object, jsonReader);
     return object;
