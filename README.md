@@ -51,7 +51,7 @@ Usage
 Download
 --------
 
-[Zip](https://sourceforge.net/projects/gson-xml/files/gson-xml-0.1.2-release.zip/download) that contains all the required binaries and main source
+[Zip](https://sourceforge.net/projects/gson-xml/files/gson-xml-0.1.3-release.zip/download) that contains all the required binaries and main source
 can be downloaded from SourceForge. 
 
 
