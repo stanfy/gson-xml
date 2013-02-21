@@ -165,8 +165,8 @@ public class ListsTest extends AbstractXmlTest {
         .setRootArrayPrimitive(true)
         .create()
         .fromXml(TEST_XML_PRIMITIVE_LIST, new TypeToken<List<Integer>>() { }.getType());
-    assertEquals(intList.size(), 3);
-    assertEquals((int)intList.get(2), 3);
+    assertEquals(3, intList.size());
+    assertEquals(3, (int)intList.get(2));
   }
 
   /**
