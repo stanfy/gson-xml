@@ -45,6 +45,19 @@ public class ListsTest extends AbstractXmlTest {
     + "  </place>"
     + "</places>";
 
+  public static final String TEST_XML_WITH_HEADER_AND_WRAPPED_LISTS =
+      "<places>"
+    + "  <error>0</error>"
+    + "  <places>"
+//    + "    <place id=\"1\" lat=\"0.25\" long=\"0.26\">"
+//    + "      <name>&lt;Place&gt;</name>"
+//    + "    </place>"
+//    + "    <place id=\"2\" lat=\"0.27\" long=\"0.28\">"
+//    + "      <name>Place 2</name>"
+//    + "    </place>"
+    + "  </places>"
+    + "</places>";
+
   /** Field and same name primitive list. */
   public static final String TEST_XML_WITH_HEADER_AND_PRIMITIVES_LIST =
         "<response>"
@@ -88,7 +101,7 @@ public class ListsTest extends AbstractXmlTest {
   /** Container. */
   public static class PlacesContainer {
     String error;
-    @SerializedName("place")
+    @SerializedName("places")
     List<Place> places;
   }
 
@@ -181,6 +194,16 @@ public class ListsTest extends AbstractXmlTest {
     .setPrimitiveArrays(true)
     .create()
     .fromXml(TEST_XML, PlacesContainer.class);
+  }
+
+  @Test
+  public void wrappedLists() {
+    final PlacesContainer places = new GsonXmlBuilder()
+    .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+    .create()
+    .fromXml(TEST_XML_WITH_HEADER_AND_WRAPPED_LISTS, PlacesContainer.class);
+
+    assertPlaces(places.places);
   }
 
 }
