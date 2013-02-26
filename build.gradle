@@ -1,5 +1,16 @@
 apply plugin : 'java'
 apply plugin : 'eclipse'
+apply plugin : 'nexus'
+
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.2'
+  }
+}
 
 group = 'com.stanfy'
 version = '0.1.4'
@@ -14,4 +25,35 @@ dependencies {
   
   testCompile 'junit:junit:4.11'
   testCompile 'net.sf.kxml:kxml2:2.3.0'
+}
+
+modifyPom {
+  project {
+    name 'Gson Xml'
+    description 'Java library for XML deserialization'
+    url 'https://github.com/stanfy/gson-xml'
+    inceptionYear '2013'
+
+    scm {
+      url 'https://github.com/stanfy/gson-xml'
+      connection 'scm:git:git@github.com:stanfy/gson-xml.git'
+      developerConnection 'scm:git:git@github.com:stanfy/gson-xml.git'
+    }
+
+    licenses {
+      license {
+        name 'The Apache Software License, Version 2.0'
+        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        distribution 'repo'
+      }
+    }
+
+    developers {
+      developer {
+        id 'rmazur'
+        name 'Roman Mazur'
+        email 'rmazur@stanfy.com.ua'
+      }
+    }
+  }
 }
