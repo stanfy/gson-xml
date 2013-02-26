@@ -85,8 +85,8 @@ public class GsonXmlBuilder {
    * @param value true to treat namespaces
    * @return this instance for chaining
    */
-  public GsonXmlBuilder setTreatNamespaces(final boolean treatNamespaces) {
-    this.options.namespaces = treatNamespaces;
+  public GsonXmlBuilder setTreatNamespaces(final boolean value) {
+    this.options.namespaces = value;
     return this;
   }
 
@@ -117,8 +117,8 @@ public class GsonXmlBuilder {
    * @param value true for same name list policy
    * @return this instance for chaining
    */
-  public GsonXmlBuilder setSameNameLists(final boolean sameNameLists) {
-    this.options.sameNameList = sameNameLists;
+  public GsonXmlBuilder setSameNameLists(final boolean value) {
+    this.options.sameNameList = value;
     return this;
   }
 
