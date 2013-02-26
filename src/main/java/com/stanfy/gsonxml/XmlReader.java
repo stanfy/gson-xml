@@ -243,14 +243,18 @@ public class XmlReader extends JsonReader {
       break;
 
     case STRING:
-      // we have array of primitives
       if (options.sameNameList) {
+        // we have array of primitives
         token = JsonToken.BEGIN_ARRAY;
         cleanupScopeStack(2, stackSize);
 
         pushToQueue(JsonToken.STRING);
         push(Scope.INSIDE_PRIMITIVE_EMBEDDED_ARRAY);
 
+      } else {
+        // we have empty list
+        token = JsonToken.BEGIN_ARRAY;
+        pushToQueue(JsonToken.END_ARRAY);
       }
       break;
 
