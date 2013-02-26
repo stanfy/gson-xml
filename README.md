@@ -51,6 +51,15 @@ Usage
 Download
 --------
 
+In a Maven project include the dependency:
+```
+<dependency>
+  <groupId>com.stanfy</groupId>
+  <artifactId>gson-xml-java</artifactId>
+  <version>(insert latest version)</version>
+</dependency>
+```
+
 [Zip](https://sourceforge.net/projects/gson-xml/files/latest/download) that contains all the required binaries and main source
 can be downloaded from SourceForge. 
 
