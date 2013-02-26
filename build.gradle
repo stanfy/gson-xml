@@ -2,6 +2,7 @@ apply plugin : 'java'
 apply plugin : 'eclipse'
 
 group = 'com.stanfy'
+version = '0.1.4'
 
 repositories {
   mavenCentral()
