@@ -1,6 +1,6 @@
 package com.stanfy.gsonxml.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -43,6 +43,14 @@ public class ListsTest extends AbstractXmlTest {
     + "  <place id=\"2\" lat=\"0.27\" long=\"0.28\">"
     + "    <name>Place 2</name>"
     + "  </place>"
+    + "</places>";
+
+  /** Empty list xml. */
+  public static final String TEST_XML_WITH_EMPTY_WRAPPED_LIST =
+      "<places>"
+    + "  <error>1</error>"
+    + "  <places>"
+    + "  </places>"
     + "</places>";
 
   /** Field and same name primitive list. */
@@ -89,6 +97,12 @@ public class ListsTest extends AbstractXmlTest {
   public static class PlacesContainer {
     String error;
     @SerializedName("place")
+    List<Place> places;
+  }
+
+  /** Container. */
+  public static class PlacesWrappedContainer {
+    String error;
     List<Place> places;
   }
 
@@ -181,6 +195,49 @@ public class ListsTest extends AbstractXmlTest {
     .setPrimitiveArrays(true)
     .create()
     .fromXml(TEST_XML, PlacesContainer.class);
+  }
+
+  @Test
+  public void wrappedEmptyLists() {
+    final PlacesWrappedContainer places = new GsonXmlBuilder()
+    .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+    .create()
+    .fromXml(TEST_XML_WITH_EMPTY_WRAPPED_LIST, PlacesWrappedContainer.class);
+
+    assertEquals("1", places.error);
+    assertTrue(places.places.isEmpty());
+  }
+
+  // currently we cannot parse this case
+  @Test(expected = JsonSyntaxException.class)
+  public void sameNameEmptyLists() {
+    final PlacesContainer places = new GsonXmlBuilder()
+    .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+    .setSameNameLists(true)
+    .create()
+    .fromXml("<root><error></error><place> </place></root>", PlacesContainer.class);
+
+    assertEquals("", places.error);
+    assertTrue(places.places.isEmpty());
+  }
+
+  @Test
+  public void emptyRootList() {
+    List<String> empty = new GsonXmlBuilder()
+      .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+      .setRootArrayPrimitive(true)
+      .create()
+      .fromXml("<root></root>", new TypeToken<List<String>>() { }.getType());
+
+    assertTrue(empty.isEmpty());
+
+    empty = new GsonXmlBuilder()
+      .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+      .setSameNameLists(false)
+      .create()
+      .fromXml("<root></root>", new TypeToken<List<String>>() { }.getType());
+
+    assertTrue(empty.isEmpty());
   }
 
 }
