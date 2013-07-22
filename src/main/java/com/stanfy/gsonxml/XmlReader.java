@@ -43,6 +43,15 @@ public class XmlReader extends JsonReader {
   /** Option. */
   private final Options options;
 
+  /** Tokens pool. */
+  private final RefsPool<TokenRef> tokensPool = new RefsPool<TokenRef>(new Creator<TokenRef>() {
+    public TokenRef create() { return new TokenRef(); }
+  });
+  /** Values pool. */
+  private final RefsPool<ValueRef> valuesPool = new RefsPool<ValueRef>(new Creator<ValueRef>() {
+    public ValueRef create() { return new ValueRef(); }
+  });
+
   /** Tokens queue. */
   private TokenRef tokensQueue, tokensQueueStart;
   /** Values queue. */
@@ -109,6 +118,7 @@ public class XmlReader extends JsonReader {
 
     tokensQueueStart = ref.next;
     if (ref == tokensQueue) { tokensQueue = null; }
+    tokensPool.release(ref);
     return ref.token;
   }
 
@@ -116,6 +126,7 @@ public class XmlReader extends JsonReader {
     final ValueRef ref = valuesQueueStart;
     if (ref == null) { throw new IllegalStateException("No value can be given"); }
     if (ref == valuesQueue) { valuesQueue = null; }
+    valuesPool.release(ref);
     valuesQueueStart = ref.next;
     return ref;
   }
@@ -380,8 +391,10 @@ public class XmlReader extends JsonReader {
   }
 
   private void addToQueue(final JsonToken token) {
-    final TokenRef tokenRef = new TokenRef();
+    final TokenRef tokenRef = tokensPool.get();
     tokenRef.token = token;
+    tokenRef.next = null;
+
     if (tokensQueue == null) {
       tokensQueue = tokenRef;
       tokensQueueStart = tokenRef;
@@ -391,8 +404,10 @@ public class XmlReader extends JsonReader {
     }
   }
   private void pushToQueue(final JsonToken token) {
-    final TokenRef tokenRef = new TokenRef();
+    final TokenRef tokenRef = tokensPool.get();
     tokenRef.token = token;
+    tokenRef.next = null;
+
     if (tokensQueueStart == null) {
       tokensQueueStart = tokenRef;
       tokensQueue = tokenRef;
@@ -402,8 +417,10 @@ public class XmlReader extends JsonReader {
     }
   }
   private void addToQueue(final String value) {
-    final ValueRef valueRef = new ValueRef();
+    final ValueRef valueRef = valuesPool.get();
     valueRef.value = value.trim();
+    valueRef.next = null;
+
     if (valuesQueue == null) {
       valuesQueue = valueRef;
       valuesQueueStart = valueRef;
@@ -458,7 +475,7 @@ public class XmlReader extends JsonReader {
 
 //      dump(false);
 
-      if (skipping) { break; }
+      if (!mustRepeat && skipping) { break; }
     }
   }
 
@@ -744,5 +761,42 @@ public class XmlReader extends JsonReader {
     /** Options. */
     boolean primitiveArrays, skipRoot, sameNameList, namespaces, rootArrayPrimitive;
   }
+
+  /** Pool for  */
+  private static final class RefsPool<T> {
+
+    /** Max count. */
+    private static final int SIZE = 32;
+
+    /** Factory instance. */
+    private final Creator<T> creator;
+
+    /** Pool. */
+    private final Object[] store = new Object[SIZE];
+
+    /** Store length. */
+    private int len = 0;
+
+    public RefsPool(final Creator<T> factory) {
+      this.creator = factory;
+    }
+
+    /** Get value from pool or create it. */
+    public T get() {
+      if (len == 0) { return creator.create(); }
+      return (T)store[--len];
+    }
+
+    /** Return value to the pool. */
+    public void release(final T obj) {
+      if (len < SIZE) {
+        store[len++] = obj;
+      }
+    }
+
+  }
+
+  /** Factory. */
+  private interface Creator<T> { T create(); }
 
 }
