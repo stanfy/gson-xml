@@ -60,15 +60,23 @@ In a Maven project include the dependency:
 </dependency>
 ```
 
-[Zip](https://sourceforge.net/projects/gson-xml/files/latest/download) that contains all the required binaries and main source
-can be downloaded from SourceForge. 
-
+Gradle example:
+```
+compile 'com.stanfy:gson-xml-java:0.1.+'
+```
 
 Android Note
 ------------
 
 In order to use this library in Android project, copy only `gson-xml` and `gson` jars to the project libraries folder.
 `kxml2` and `xmlpull` jars are not required since `XmlPullParser` is a part of Android SDK.
+To exclude them in your Gradle project use the following lines:
+```
+compile('com.stanfy:gson-xml-java:0.1.+') {
+  exclude group: 'xmlpull', module: 'xmlpull'
+}
+```
+
 
 License
 -------
