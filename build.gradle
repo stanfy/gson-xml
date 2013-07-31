@@ -13,7 +13,7 @@ buildscript {
 }
 
 group = 'com.stanfy'
-version = '0.2-SNAPSHOT'
+version = '0.1.6-SNAPSHOT'
 
 repositories {
   mavenCentral()
@@ -25,6 +25,11 @@ dependencies {
   
   testCompile 'junit:junit:4.11'
   testCompile 'net.sf.kxml:kxml2:2.3.0'
+}
+
+task testJar(type: Jar) {
+  classifier = 'tests'
+  from sourceSets.test.java
 }
 
 modifyPom {

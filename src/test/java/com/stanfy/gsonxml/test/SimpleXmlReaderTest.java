@@ -13,6 +13,8 @@ import com.stanfy.gsonxml.GsonXmlBuilder;
 import com.stanfy.gsonxml.XmlParserCreator;
 import com.stanfy.gsonxml.XmlReader;
 
+import java.io.StringReader;
+
 /**
  * Tests for {@link XmlReader}.
  */
@@ -145,6 +147,16 @@ public class SimpleXmlReaderTest {
     assertEquals("my name", model.getName());
     assertEquals("my description", model.getDescription());
     assertTrue(model.isA());
+  }
+
+  /* ================== Text =================== */
+
+  @Test
+  public void entityRefTest() throws Exception {
+    String xml = "<model a1=\"a&amp;a&lt;&gt;\"><name>my &lt;&gt; name &amp;</name><description>my &amp; description</description></model>";
+    SimpleModelForAttr result = createGson().fromXml(xml, SimpleModelForAttr.class);
+    assertEquals("a&a<>", result.getA1());
+    assertEquals("my <> name &", result.getName());
   }
 
 }

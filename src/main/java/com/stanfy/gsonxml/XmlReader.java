@@ -341,7 +341,7 @@ public class XmlReader extends JsonReader {
 
 
   private XmlTokenInfo nextXmlInfo() throws IOException, XmlPullParserException {
-    final int type = xmlParser.nextToken();
+    final int type = xmlParser.next();
 
     final XmlTokenInfo info = this.xmlToken;
     info.clear();
@@ -365,7 +365,6 @@ public class XmlReader extends JsonReader {
       info.ns = xmlParser.getNamespace();
       break;
 
-    case XmlPullParser.CDSECT:
     case XmlPullParser.TEXT:
       final String text = xmlParser.getText().trim();
       if (text.length() == 0) {
