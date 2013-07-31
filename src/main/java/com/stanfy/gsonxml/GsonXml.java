@@ -18,7 +18,7 @@ import com.stanfy.gsonxml.XmlReader.Options;
  * Wrapper for {@link Gson}.
  * @author Roman Mazur (Stanfy - http://stanfy.com)
  */
-public final class GsonXml {
+public class GsonXml {
 
   /** Core object. */
   private final Gson core;
