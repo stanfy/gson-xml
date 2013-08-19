@@ -48,6 +48,38 @@ Usage
       assertEquals("my description", model.getDescription());
     }
 
+Use `@SerializedName` annotation to handle tag attributes and text nodes.
+
+To illustrate, this XML
+```xml
+<person dob="01.01.1973" gender="male">
+  <name>John</name>
+  Likes travelling.
+</person>
+```
+can be mapped to a POJO
+```java
+public class Person {
+
+  @SerializedName("@dob")
+  private String dob;
+
+  @SerializedName("@gender")
+  private String gender;
+
+  private String name;
+
+  @SerializedName("$")
+  private String description;
+
+  // ...
+}
+```
+
+You may also take a look at
+[SimpleXmlReaderTest](https://github.com/stanfy/gson-xml/blob/master/src/test/java/com/stanfy/gsonxml/test/SimpleXmlReaderTest.java)
+to see other samples.
+
 Download
 --------
 
