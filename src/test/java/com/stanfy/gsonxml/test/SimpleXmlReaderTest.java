@@ -159,4 +159,30 @@ public class SimpleXmlReaderTest {
     assertEquals("my <> name &", result.getName());
   }
 
+  /** Result for dashedTagNamesShouldBeParsed. */
+  private static class DashedTagResult {
+    @SerializedName("dashed-field")
+    String field;
+  }
+
+  @Test
+  public void dashedTagNamesShouldBeParsed() throws Exception {
+    String xml = "<r><dashed-field>a</dashed-field></r>";
+    DashedTagResult r = createGson().fromXml(xml, DashedTagResult.class);
+    assertEquals("a", r.field);
+  }
+
+  /** Result for dashedTagNamesShouldBeParsed. */
+  private static class DashedAttrResult {
+    @SerializedName("@dashed-field")
+    String field;
+  }
+
+  @Test
+  public void dashedAttrNamesShouldBeParsed() throws Exception {
+    String xml = "<r dashed-field=\"b\"/>";
+    DashedAttrResult r = createGson().fromXml(xml, DashedAttrResult.class);
+    assertEquals("b", r.field);
+  }
+
 }
