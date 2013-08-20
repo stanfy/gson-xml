@@ -1,17 +1,18 @@
 package com.stanfy.gsonxml.test;
 
-import static org.junit.Assert.*;
-
-import java.io.FileNotFoundException;
-import java.util.List;
-
-import org.junit.Test;
-
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.stanfy.gsonxml.GsonXmlBuilder;
+
+import org.junit.Test;
+
+import java.io.FileNotFoundException;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -238,6 +239,55 @@ public class ListsTest extends AbstractXmlTest {
       .fromXml("<root></root>", new TypeToken<List<String>>() { }.getType());
 
     assertTrue(empty.isEmpty());
+  }
+
+  /** Nested lists of primitives. */
+  public static final String TEST_XML_NESTED_LISTS =
+          "<response>"
+                  + "  <list0>"
+                  + "    <list1>"
+                  + "      <list2>item0</list2>"
+                  + "      <list2>item1</list2>"
+                  + "      <list2>item2</list2>"
+                  + "    </list1>"
+                  + "    <list1>"
+                  + "      <list2>item3</list2>"
+                  + "      <list2>item4</list2>"
+                  + "    </list1>"
+                  + "  </list0>";
+
+  public static class One {
+    @SerializedName("list0")
+    List<Two> list;
+  }
+
+  public static class Two {
+    @SerializedName("list1")
+    List<Three> list;
+  }
+
+  public static class Three {
+    @SerializedName("list2")
+    List<String> list;
+  }
+
+  @Test
+  public void nestedListsTest() {
+    One nestedList = new GsonXmlBuilder()
+      .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+      .setSameNameLists(true)
+      .create()
+      .fromXml(TEST_XML_NESTED_LISTS, new TypeToken<One>() { }.getType());
+
+    assertEquals(nestedList.list.size(), 1);
+    assertEquals(nestedList.list.get(0).list.size(), 2);
+    assertEquals(nestedList.list.get(0).list.get(0).list.size(), 3);
+    assertEquals(nestedList.list.get(0).list.get(1).list.size(), 2);
+    assertEquals(nestedList.list.get(0).list.get(0).list.get(0), "item0");
+    assertEquals(nestedList.list.get(0).list.get(0).list.get(1), "item1");
+    assertEquals(nestedList.list.get(0).list.get(0).list.get(2), "item2");
+    assertEquals(nestedList.list.get(0).list.get(1).list.get(0), "item3");
+    assertEquals(nestedList.list.get(0).list.get(1).list.get(1), "item4");
   }
 
 }
