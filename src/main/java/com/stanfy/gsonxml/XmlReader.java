@@ -1,14 +1,14 @@
 package com.stanfy.gsonxml;
 
-import java.io.IOException;
-import java.io.Reader;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  * Reads XML as JSON.
@@ -98,7 +98,7 @@ public class XmlReader extends JsonReader {
     for (int i = 0; i < stackSize; i++) {
       System.out.print(stack[i] + " ");
     }
-    System.out.println();
+    System.out.println("\n" + stackSize);
 
     if (showToken) {
       System.out.print(token + ", ");
@@ -257,7 +257,7 @@ public class XmlReader extends JsonReader {
       if (options.sameNameList) {
         // we have array of primitives
         token = JsonToken.BEGIN_ARRAY;
-        cleanupScopeStack(2, stackSize);
+        cleanupScopeStack(0/*FIXME 2*/, stackSize);
 
         pushToQueue(JsonToken.STRING);
         push(Scope.INSIDE_PRIMITIVE_EMBEDDED_ARRAY);
@@ -446,6 +446,13 @@ public class XmlReader extends JsonReader {
       final XmlTokenInfo xml = nextXmlInfo();
       if (endReached) {
         if (!options.skipRoot) { addToQueue(JsonToken.END_OBJECT); }
+        // FIXME close enclosing array
+        if (stackSize > 0 && stack[stackSize - 1] == Scope.INSIDE_EMBEDDED_ARRAY) {
+          addToQueue(JsonToken.END_ARRAY);
+          addToQueue(JsonToken.END_OBJECT);
+          stackSize--;
+          fixScopeStack();
+        }
         break;
       }
       if (xml.type == IGNORE) { continue; }
@@ -472,7 +479,7 @@ public class XmlReader extends JsonReader {
       default:
       }
 
-//      dump(false);
+      //dump(false);
 
       if (!mustRepeat && skipping) { break; }
     }
