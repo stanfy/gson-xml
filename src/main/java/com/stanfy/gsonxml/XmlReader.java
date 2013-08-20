@@ -213,7 +213,8 @@ public class XmlReader extends JsonReader {
 
       if (peekNextToken() == JsonToken.NAME) {
         if (options.sameNameList) {
-          cleanupScopeStack(3, stackSize);
+          // we are replacing current scope with INSIDE_EMBEDDED_ARRAY
+          cleanupScopeStack(1, stackSize);
 
           // use it as a field
           pushToQueue(JsonToken.BEGIN_OBJECT);
@@ -257,7 +258,6 @@ public class XmlReader extends JsonReader {
       if (options.sameNameList) {
         // we have array of primitives
         token = JsonToken.BEGIN_ARRAY;
-        cleanupScopeStack(2, stackSize);
 
         pushToQueue(JsonToken.STRING);
         push(Scope.INSIDE_PRIMITIVE_EMBEDDED_ARRAY);
@@ -614,8 +614,8 @@ public class XmlReader extends JsonReader {
     case INSIDE_EMBEDDED_ARRAY:
       addToQueue(JsonToken.END_ARRAY);
       addToQueue(JsonToken.END_OBJECT);
-      stackSize--;
-      fixScopeStack();
+      fixScopeStack(); // auto-close embedded array
+      fixScopeStack(); // close current object scope
       break;
 
     case INSIDE_PRIMITIVE_ARRAY:
