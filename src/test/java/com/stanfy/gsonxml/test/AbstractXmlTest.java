@@ -10,7 +10,7 @@ import com.stanfy.gsonxml.GsonXml;
  * Base class for tests.
  * @author Roman Mazur (Stanfy - http://stanfy.com)
  */
-public class AbstractXmlTest {
+public abstract class AbstractXmlTest {
 
   /** Parser. */
   static GsonXml gsonXml;
