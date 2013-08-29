@@ -6,17 +6,16 @@ apply plugin : 'mattock'
 buildscript {
   repositories {
     mavenCentral()
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
   }
 
   dependencies {
     classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.2'
-    classpath 'com.stanfy.mattock:gradle-plugin:0.9-SNAPSHOT'
+    classpath 'com.stanfy.mattock:gradle-plugin:0.9'
   }
 }
 
 group = 'com.stanfy'
-version = '0.1.6-SNAPSHOT'
+version = '0.1.6'
 
 repositories {
   mavenCentral()
