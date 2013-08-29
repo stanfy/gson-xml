@@ -3,6 +3,7 @@ package com.stanfy.gsonxml.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.fest.reflect.core.Reflection;
 import org.junit.Test;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -24,6 +25,15 @@ public class SimpleXmlReaderTest {
   public static final XmlParserCreator PARSER_CREATOR = new XmlParserCreator() {
     @Override
     public XmlPullParser createParser() {
+      try {
+        return Reflection.staticMethod("newPullParser")
+            .withReturnType(XmlPullParser.class)
+            .in(Class.forName("android.util.Xml"))
+            .invoke();
+      } catch (final Exception ignored) {
+        // it's not Android
+      }
+
       try {
         final XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
         parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);

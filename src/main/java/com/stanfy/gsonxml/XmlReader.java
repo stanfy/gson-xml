@@ -41,7 +41,7 @@ public class XmlReader extends JsonReader {
   private final XmlPullParser xmlParser;
 
   /** Option. */
-  private final Options options;
+  final Options options;
 
   /** Tokens pool. */
   private final RefsPool<TokenRef> tokensPool = new RefsPool<TokenRef>(new Creator<TokenRef>() {
@@ -720,7 +720,7 @@ public class XmlReader extends JsonReader {
     }
   }
 
-  private static final class AttributesData {
+  private final class AttributesData {
     String[] names, values, ns;
 
     int count = 0;
@@ -744,7 +744,9 @@ public class XmlReader extends JsonReader {
       count = aCount;
       for (int i = 0; i < aCount; i++) {
         names[i] = parser.getAttributeName(i);
-        ns[i] = parser.getAttributePrefix(i);
+        if (options.namespaces) {
+          ns[i] = parser.getAttributePrefix(i);
+        }
         values[i] = parser.getAttributeValue(i);
       }
     }
