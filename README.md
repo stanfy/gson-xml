@@ -111,7 +111,6 @@ compile('com.stanfy:gson-xml-java:0.1.+') {
 
 Also be aware that Android SDK up to 'Ice Cream Sandwich' returns instance of `ExpatPullParser` when you call
 [Xml.newPullParser()](http://developer.android.com/reference/android/util/Xml.html#newPullParser()).
-
 And this parser does not support namespaces.
 
 Read also this [blog post](http://android-developers.blogspot.com/2011_12_01_archive.html) about issues with
