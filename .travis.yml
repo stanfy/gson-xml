@@ -13,7 +13,7 @@ before_install:
   - wget https://dl-ssl.google.com/android/repository/build-tools_r18.0.1-linux.zip
   - unzip build-tools_r18.0.1-linux.zip -d $ANDROID_HOME
   - mkdir -p $ANDROID_HOME/build-tools/
-  - mv $ANDROID_HOME/android-4.2.2 $ANDROID_HOME/build-tools/18.0.1
+  - mv $ANDROID_HOME/android-4.3 $ANDROID_HOME/build-tools/18.0.1
 
   # Get android components
   - echo yes | android update sdk --filter platform-tools --no-ui --force > /dev/null
