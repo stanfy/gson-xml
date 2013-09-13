@@ -218,7 +218,7 @@ public class ListsTest extends AbstractXmlTest {
     .fromXml("<root><error></error><place> </place></root>", PlacesContainer.class);
 
     assertEquals("", places.error);
-    assertTrue(places.places.isEmpty());
+    assertEquals(1, places.places.size());
   }
 
   @Test
@@ -238,6 +238,37 @@ public class ListsTest extends AbstractXmlTest {
       .fromXml("<root></root>", new TypeToken<List<String>>() { }.getType());
 
     assertTrue(empty.isEmpty());
+  }
+
+  /** Container with 2 lists. */
+  public static class TwoListPlacesContainer {
+    @SerializedName("p1")
+    List<Place> places1;
+    @SerializedName("p2")
+    List<Place> places2;
+  }
+
+  @Test
+  public void twoListsAsSameNames() {
+    final TwoListPlacesContainer places = new GsonXmlBuilder()
+        .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+        .setSameNameLists(true)
+        .create()
+        .fromXml("<root> <p1></p1> <p1 id=\"2\" /> <p2></p2> </root>", TwoListPlacesContainer.class);
+    assertEquals(2, places.places1.size());
+    assertEquals(1, places.places2.size());
+    assertEquals(2, places.places1.get(1).id);
+  }
+
+  @Test
+  public void twoListsAsGroupElement() {
+    final TwoListPlacesContainer places = new GsonXmlBuilder()
+        .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+        .create()
+        .fromXml("<root> <p1><item/><item id=\"2\" /></p1> <p2><item/></p2> </root>", TwoListPlacesContainer.class);
+    assertEquals(2, places.places1.size());
+    assertEquals(2, places.places1.get(1).id);
+    assertEquals(1, places.places2.size());
   }
 
 }
