@@ -1,13 +1,11 @@
 package com.stanfy.gsonxml.test;
 
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.stanfy.gsonxml.GsonXmlBuilder;
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -119,7 +117,7 @@ public class ListsTest extends AbstractXmlTest {
   }
 
   @Test
-  public void primitiveListWithSameNameTagsTest() throws JsonSyntaxException, JsonIOException, FileNotFoundException {
+  public void primitiveListWithSameNameTagsTest() {
     final ListWithHeader listWithHeader =
         new GsonXmlBuilder()
         .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
