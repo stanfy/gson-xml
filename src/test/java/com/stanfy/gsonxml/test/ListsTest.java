@@ -1,17 +1,17 @@
 package com.stanfy.gsonxml.test;
 
-import static org.junit.Assert.*;
-
-import java.io.FileNotFoundException;
-import java.util.List;
-
-import org.junit.Test;
-
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.stanfy.gsonxml.GsonXmlBuilder;
+import org.junit.Test;
+
+import java.io.FileNotFoundException;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -208,8 +208,7 @@ public class ListsTest extends AbstractXmlTest {
     assertTrue(places.places.isEmpty());
   }
 
-  // currently we cannot parse this case
-  @Test(expected = JsonSyntaxException.class)
+  @Test
   public void sameNameEmptyLists() {
     final PlacesContainer places = new GsonXmlBuilder()
     .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)

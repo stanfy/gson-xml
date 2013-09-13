@@ -1,14 +1,13 @@
 package com.stanfy.gsonxml;
 
-import java.io.IOException;
-import java.io.Reader;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  * Reads XML as JSON.
@@ -255,16 +254,27 @@ public class XmlReader extends JsonReader {
       break;
 
     case STRING:
+      token = JsonToken.BEGIN_ARRAY;
       if (options.sameNameList) {
-        // we have array of primitives
-        token = JsonToken.BEGIN_ARRAY;
 
-        pushToQueue(JsonToken.STRING);
-        push(Scope.INSIDE_PRIMITIVE_EMBEDDED_ARRAY);
+        if (options.primitiveArrays) {
+          // we have array of primitives
+          pushToQueue(JsonToken.STRING);
+          push(Scope.INSIDE_PRIMITIVE_EMBEDDED_ARRAY);
+        } else {
+          // ignore the value
+          String value = nextValue().value;
+          if (value.length() != 0) {
+            throw new JsonSyntaxException("String value '" + value + "' inside of non-primitive array");
+          }
+          // we have an empty object inside of an array
+          pushToQueue(JsonToken.END_OBJECT);
+          pushToQueue(JsonToken.BEGIN_OBJECT);
+          push(Scope.INSIDE_EMBEDDED_ARRAY);
+        }
 
       } else {
-        // we have empty list
-        token = JsonToken.BEGIN_ARRAY;
+        // we have an empty list
         pushToQueue(JsonToken.END_ARRAY);
       }
       break;
