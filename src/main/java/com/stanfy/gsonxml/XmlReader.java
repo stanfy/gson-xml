@@ -1,14 +1,13 @@
 package com.stanfy.gsonxml;
 
-import java.io.IOException;
-import java.io.Reader;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  * Reads XML as JSON.
@@ -22,19 +21,26 @@ public class XmlReader extends JsonReader {
   /** Scope. */
   private static enum Scope {
     /** We are inside an object. Next token should be {@link JsonToken#NAME} or {@link JsonToken#END_OBJECT}. */
-    INSIDE_OBJECT,
+    INSIDE_OBJECT(false),
     /** We are inside an array. Next token should be {@link JsonToken#BEGIN_OBJECT} or {@link JsonToken#END_ARRAY}. */
-    INSIDE_ARRAY,
+    INSIDE_ARRAY(true),
     /** We are inside automatically added array. Next token should be {@link JsonToken#BEGIN_OBJECT} or {@link JsonToken#END_ARRAY}. */
-    INSIDE_EMBEDDED_ARRAY,
+    INSIDE_EMBEDDED_ARRAY(true),
     /** We are inside primitive embedded array. Child scope can be #PRIMITIVE_VALUE only. */
-    INSIDE_PRIMITIVE_EMBEDDED_ARRAY,
+    INSIDE_PRIMITIVE_EMBEDDED_ARRAY(true),
     /** We are inside primitive array. Child scope can be #PRIMITIVE_VALUE only. */
-    INSIDE_PRIMITIVE_ARRAY,
+    INSIDE_PRIMITIVE_ARRAY(true),
     /** We are inside primitive value. Next token should be {@link JsonToken#STRING} or {@link JsonToken#END_ARRAY}. */
-    PRIMITIVE_VALUE,
+    PRIMITIVE_VALUE(false),
     /** New start tag met, we returned {@link JsonToken#NAME}. Object, array, or value can go next. */
-    NAME
+    NAME(false);
+
+    /** Inside array flag. */
+    final boolean insideArray;
+
+    private Scope(final boolean insideArray) {
+      this.insideArray = insideArray;
+    }
   }
 
   /** XML parser. */
@@ -60,18 +66,20 @@ public class XmlReader extends JsonReader {
   private JsonToken expectedToken;
 
   /** State. */
-  private boolean endReached, firstStart = true, lastTextWiteSpace = false;
+  private boolean endReached, firstStart = true, lastTextWhiteSpace = false;
 
+  /** Stack of scopes. */
+  private final Stack<Scope> scopeStack = new Stack<Scope>();
+  /** Stack of last closed tags. */
+  private final Stack<ClosedTag> closeStack = new Stack<ClosedTag>();
+
+  /** Current token. */
   private JsonToken token;
 
   /** Counter for "$". */
   private int textNameCounter = 0;
 
-  /** Stack. */
-  private Scope[] stack = new Scope[32];
-  /** Stack size. */
-  private int stackSize = 0;
-
+  /** Skipping state flag. */
   private boolean skipping;
 
   /** Last XML token info. */
@@ -94,19 +102,17 @@ public class XmlReader extends JsonReader {
   }
 
   @SuppressWarnings("unused")
-  private void dump(final boolean showToken) {
-    for (int i = 0; i < stackSize; i++) {
-      System.out.print(stack[i] + " ");
-    }
-    System.out.println();
-
-    if (showToken) {
-      System.out.print(token + ", ");
-    }
-    System.out.println(tokensQueueStart);
-    System.out.println(valuesQueueStart);
-    System.out.println("----------------------");
+  private CharSequence dump() {
+    return new StringBuilder()
+      .append("Scopes: ").append(scopeStack).append('\n')
+      .append("Closed tags: ").append(closeStack).append('\n')
+      .append("Token: ").append(token).append('\n')
+      .append("Tokens queue: ").append(tokensQueueStart).append('\n')
+      .append("Values queue: ").append(valuesQueueStart).append('\n');
   }
+
+  @Override
+  public String toString() { return "--- XmlReader ---\n" + dump(); }
 
   private JsonToken peekNextToken() { return tokensQueueStart != null ? tokensQueueStart.token : null; }
 
@@ -134,7 +140,7 @@ public class XmlReader extends JsonReader {
   private void expect(final JsonToken token) throws IOException {
     final JsonToken actual = peek();
     this.token = null;
-    if (actual != token) { throw new IllegalStateException(token + " expected, but met " + actual); }
+    if (actual != token) { throw new IllegalStateException(token + " expected, but met " + actual + "\n" + dump()); }
   }
 
   @Override
@@ -185,20 +191,6 @@ public class XmlReader extends JsonReader {
     }
   }
 
-  private int cleanupScopeStack(final int count, final int oldStackSize) {
-    int curStackSize = stackSize;
-    if (oldStackSize < curStackSize) {
-      for (int i = oldStackSize; i < curStackSize; i++) {
-        stack[i - count] = stack[i];
-      }
-      stackSize -= count;
-    } else {
-      stackSize -= count - oldStackSize + curStackSize;
-    }
-    if (stackSize < 0) { stackSize = 0; }
-    return oldStackSize - count;
-  }
-
   private void adaptCurrentToken() throws XmlPullParserException, IOException {
     if (token == expectedToken) { return; }
     if (expectedToken != JsonToken.BEGIN_ARRAY) { return; }
@@ -209,41 +201,41 @@ public class XmlReader extends JsonReader {
 
       token = JsonToken.BEGIN_ARRAY;
 
-      final Scope lastScope = stack[stackSize - 1];
+      final Scope lastScope = scopeStack.peek();
 
       if (peekNextToken() == JsonToken.NAME) {
         if (options.sameNameList) {
           // we are replacing current scope with INSIDE_EMBEDDED_ARRAY
-          cleanupScopeStack(1, stackSize);
+          scopeStack.cleanup(1);
 
           // use it as a field
           pushToQueue(JsonToken.BEGIN_OBJECT);
 
-          push(Scope.INSIDE_EMBEDDED_ARRAY);
-          push(Scope.INSIDE_OBJECT);
+          scopeStack.push(Scope.INSIDE_EMBEDDED_ARRAY);
+          scopeStack.push(Scope.INSIDE_OBJECT);
           if (lastScope == Scope.NAME) {
-            push(Scope.NAME);
+            scopeStack.push(Scope.NAME);
           }
         } else {
           // ignore name
           nextToken();
           nextValue();
 
-          int pushPos = stackSize;
+          int pushPos = scopeStack.size();
           if (options.primitiveArrays && peekNextToken() == null) {
             // pull what next: it can be either primitive or object
             fillQueues(true);
           }
-          pushPos = cleanupScopeStack(3, pushPos);
+          pushPos = scopeStack.cleanup(3, pushPos);
 
           if (options.primitiveArrays && peekNextToken() == JsonToken.STRING) {
             // primitive
-            pushAt(pushPos, Scope.INSIDE_PRIMITIVE_ARRAY);
+            scopeStack.pushAt(pushPos, Scope.INSIDE_PRIMITIVE_ARRAY);
           } else {
             // object (if array it will be adapted again)
-            pushAt(pushPos, Scope.INSIDE_ARRAY);
-            if (stackSize <= pushPos + 1 || stack[pushPos + 1] != Scope.INSIDE_OBJECT) {
-              pushAt(pushPos + 1, Scope.INSIDE_OBJECT);
+            scopeStack.pushAt(pushPos, Scope.INSIDE_ARRAY);
+            if (scopeStack.size() <= pushPos + 1 || scopeStack.get(pushPos + 1) != Scope.INSIDE_OBJECT) {
+              scopeStack.pushAt(pushPos + 1, Scope.INSIDE_OBJECT);
             }
             if (peekNextToken() != JsonToken.BEGIN_OBJECT) {
               pushToQueue(JsonToken.BEGIN_OBJECT);
@@ -255,16 +247,27 @@ public class XmlReader extends JsonReader {
       break;
 
     case STRING:
+      token = JsonToken.BEGIN_ARRAY;
       if (options.sameNameList) {
-        // we have array of primitives
-        token = JsonToken.BEGIN_ARRAY;
 
-        pushToQueue(JsonToken.STRING);
-        push(Scope.INSIDE_PRIMITIVE_EMBEDDED_ARRAY);
+        if (options.primitiveArrays) {
+          // we have array of primitives
+          pushToQueue(JsonToken.STRING);
+          scopeStack.push(Scope.INSIDE_PRIMITIVE_EMBEDDED_ARRAY);
+        } else {
+          // pass value as a text node inside of an object
+          String value = nextValue().value;
+          pushToQueue(JsonToken.END_OBJECT);
+          pushToQueue(JsonToken.STRING);
+          pushToQueue(JsonToken.NAME);
+          pushToQueue(JsonToken.BEGIN_OBJECT);
+          pushToQueue(value);
+          pushToQueue("$");
+          scopeStack.push(Scope.INSIDE_EMBEDDED_ARRAY);
+        }
 
       } else {
-        // we have empty list
-        token = JsonToken.BEGIN_ARRAY;
+        // we have an empty list
         pushToQueue(JsonToken.END_ARRAY);
       }
       break;
@@ -368,11 +371,11 @@ public class XmlReader extends JsonReader {
     case XmlPullParser.TEXT:
       final String text = xmlParser.getText().trim();
       if (text.length() == 0) {
-        lastTextWiteSpace = true;
+        lastTextWhiteSpace = true;
         info.type = IGNORE;
         return info;
       }
-      lastTextWiteSpace = false;
+      lastTextWhiteSpace = false;
       info.type = VALUE;
       info.value = text;
       break;
@@ -428,6 +431,19 @@ public class XmlReader extends JsonReader {
       valuesQueue = valueRef;
     }
   }
+  private void pushToQueue(final String value) {
+    final ValueRef valueRef = valuesPool.get();
+    valueRef.value = value;
+    valueRef.next = null;
+
+    if (valuesQueueStart == null) {
+      valuesQueue = valueRef;
+      valuesQueueStart = valueRef;
+    } else {
+      valueRef.next = valuesQueueStart;
+      valuesQueueStart = valueRef;
+    }
+  }
   private void addToQueue(final AttributesData attrData) throws IOException, XmlPullParserException {
     final int count = attrData.count;
     for (int i = 0; i < count; i++) {
@@ -452,8 +468,6 @@ public class XmlReader extends JsonReader {
 
       mustRepeat = false;
 
-//      System.out.println(xml);
-
       switch (xml.type) {
       case START_TAG:
         if (firstStart) {
@@ -472,8 +486,6 @@ public class XmlReader extends JsonReader {
       default:
       }
 
-//      dump(false);
-
       if (!mustRepeat && skipping) { break; }
     }
   }
@@ -482,13 +494,13 @@ public class XmlReader extends JsonReader {
     if (!options.skipRoot) {
 
       addToQueue(expectedToken);
-      push(Scope.INSIDE_OBJECT);
+      scopeStack.push(Scope.INSIDE_OBJECT);
       processStart(xml);
 
     } else if (xml.attributesData != null) {
 
       addToQueue(JsonToken.BEGIN_OBJECT);
-      push(Scope.INSIDE_OBJECT);
+      scopeStack.push(Scope.INSIDE_OBJECT);
       addToQueue(xml.attributesData);
 
     } else {
@@ -496,11 +508,11 @@ public class XmlReader extends JsonReader {
       switch (expectedToken) {
       case BEGIN_OBJECT:
         addToQueue(JsonToken.BEGIN_OBJECT);
-        push(Scope.INSIDE_OBJECT);
+        scopeStack.push(Scope.INSIDE_OBJECT);
         break;
       case BEGIN_ARRAY:
         addToQueue(JsonToken.BEGIN_ARRAY);
-        push(options.rootArrayPrimitive ? Scope.INSIDE_PRIMITIVE_ARRAY : Scope.INSIDE_ARRAY);
+        scopeStack.push(options.rootArrayPrimitive ? Scope.INSIDE_PRIMITIVE_ARRAY : Scope.INSIDE_ARRAY);
         break;
       default:
         throw new IllegalStateException("First expectedToken=" + expectedToken + " (not begin_object/begin_array)");
@@ -513,13 +525,27 @@ public class XmlReader extends JsonReader {
 
     boolean processTagName = true;
 
-    Scope lastScope = stack[stackSize - 1];
+    Scope lastScope = scopeStack.peek();
+
+    if (options.sameNameList && lastScope.insideArray && closeStack.size() > 0) {
+      ClosedTag lastClosedInfo = closeStack.peek();
+      if (lastClosedInfo.depth == xmlParser.getDepth()) {
+        String currentName = options.namespaces ? xml.getName(xmlParser) : xml.name;
+        if (!currentName.equals(lastClosedInfo.name)) {
+          // close the previous array
+          addToQueue(JsonToken.END_ARRAY);
+          fixScopeStack();
+          lastScope = scopeStack.peek();
+        }
+      }
+    }
+
     switch (lastScope) {
 
     case INSIDE_PRIMITIVE_ARRAY:
     case INSIDE_PRIMITIVE_EMBEDDED_ARRAY:
       processTagName = false;
-      push(Scope.PRIMITIVE_VALUE);
+      scopeStack.push(Scope.PRIMITIVE_VALUE);
       break;
 
     case INSIDE_EMBEDDED_ARRAY:
@@ -529,25 +555,25 @@ public class XmlReader extends JsonReader {
 
     case NAME:
       addToQueue(JsonToken.BEGIN_OBJECT);
-      push(Scope.INSIDE_OBJECT);
+      scopeStack.push(Scope.INSIDE_OBJECT);
       break;
 
     default:
     }
 
     if (processTagName) {                 // ignore tag name inside the array
-      push(Scope.NAME);
+      scopeStack.push(Scope.NAME);
       addToQueue(JsonToken.NAME);
       addToQueue(xml.getName(xmlParser));
-      lastTextWiteSpace = true;           // if tag is closed immediately we'll add empty value to the queue
+      lastTextWhiteSpace = true;           // if tag is closed immediately we'll add empty value to the queue
     }
 
     if (xml.attributesData != null) {
-      lastScope = stack[stackSize - 1];
+      lastScope = scopeStack.peek();
       if (lastScope == Scope.PRIMITIVE_VALUE) { throw new IllegalStateException("Attributes data in primitive scope"); }
       if (lastScope == Scope.NAME) {
         addToQueue(JsonToken.BEGIN_OBJECT);
-        push(Scope.INSIDE_OBJECT);
+        scopeStack.push(Scope.INSIDE_OBJECT);
       }
       // attributes, as fields
       addToQueue(xml.attributesData);
@@ -555,7 +581,7 @@ public class XmlReader extends JsonReader {
   }
 
   private boolean processText(final XmlTokenInfo xml) {
-    switch (stack[stackSize - 1]) {
+    switch (scopeStack.peek()) {
 
     case PRIMITIVE_VALUE:
       addTextToQueue(xml.value, false);
@@ -575,7 +601,7 @@ public class XmlReader extends JsonReader {
       return false;
 
     default:
-      throw new JsonSyntaxException("Cannot process text '" + xml.value + "' inside scope " + stack[stackSize - 1]);
+      throw new JsonSyntaxException("Cannot process text '" + xml.value + "' inside scope " + scopeStack.peek());
     }
   }
 
@@ -591,14 +617,11 @@ public class XmlReader extends JsonReader {
   }
 
   private void fixScopeStack() {
-    stackSize--;
-    if (stackSize > 0 && stack[stackSize - 1] == Scope.NAME) {
-      stackSize--;
-    }
+    scopeStack.fix(Scope.NAME);
   }
 
-  private void processEnd(final XmlTokenInfo xml) {
-    switch (stack[stackSize - 1]) {
+  private void processEnd(final XmlTokenInfo xml) throws IOException, XmlPullParserException {
+    switch (scopeStack.peek()) {
 
     case INSIDE_OBJECT:
       addToQueue(JsonToken.END_OBJECT);
@@ -607,7 +630,7 @@ public class XmlReader extends JsonReader {
       break;
 
     case PRIMITIVE_VALUE:
-      stackSize--;
+      scopeStack.drop();
       break;
 
     case INSIDE_PRIMITIVE_EMBEDDED_ARRAY:
@@ -625,7 +648,7 @@ public class XmlReader extends JsonReader {
       break;
 
     case NAME:
-      if (lastTextWiteSpace) {
+      if (lastTextWhiteSpace) {
         addTextToQueue("", true);
       }
       fixScopeStack();
@@ -634,29 +657,21 @@ public class XmlReader extends JsonReader {
     default:
       // nothing
     }
-  }
 
-  private void ensureStack() {
-    if (stackSize == stack.length) {
-      final Scope[] newStack = new Scope[stackSize * 2];
-      System.arraycopy(stack, 0, newStack, 0, stackSize);
-      stack = newStack;
+    if (options.sameNameList) {
+      int stackSize = xmlParser.getDepth();
+      final String name = options.namespaces ? xml.getName(xmlParser) : xml.name;
+      final Stack<ClosedTag> closeStack = this.closeStack;
+      boolean nameChange = false;
+      while (closeStack.size() > 0 && closeStack.peek().depth > stackSize) {
+        closeStack.drop();
+      }
+      if (closeStack.size() == 0 || closeStack.peek().depth < stackSize) {
+        closeStack.push(new ClosedTag(stackSize, name));
+      } else {
+        closeStack.peek().name = name;
+      }
     }
-  }
-
-  private void push(final Scope scope) {
-    ensureStack();
-    stack[stackSize++] = scope;
-  }
-  private void pushAt(final int position, final Scope scope) {
-    int pos = position;
-    if (pos < 0) { pos = 0; }
-    ensureStack();
-    for (int i = stackSize - 1; i >= pos; i--) {
-      stack[i + 1] = stack[i];
-    }
-    stack[pos] = scope;
-    stackSize++;
   }
 
   private static final class TokenRef {
@@ -761,6 +776,22 @@ public class XmlReader extends JsonReader {
   public static class Options {
     /** Options. */
     boolean primitiveArrays, skipRoot, sameNameList, namespaces, rootArrayPrimitive;
+  }
+
+  /** Closed tag data. */
+  private static class ClosedTag {
+    int depth;
+    String name;
+
+    public ClosedTag(final int depth, final String name) {
+      this.depth = depth;
+      this.name = name;
+    }
+
+    @Override
+    public String toString() {
+      return "'" + name + "'/" + depth;
+    }
   }
 
   /** Pool for  */
