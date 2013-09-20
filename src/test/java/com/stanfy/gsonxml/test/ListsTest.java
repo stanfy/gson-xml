@@ -1,17 +1,15 @@
 package com.stanfy.gsonxml.test;
 
-import static org.junit.Assert.*;
-
-import java.io.FileNotFoundException;
-import java.util.List;
-
-import org.junit.Test;
-
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import com.stanfy.gsonxml.GsonXmlBuilder;
+import org.junit.Test;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -119,7 +117,7 @@ public class ListsTest extends AbstractXmlTest {
   }
 
   @Test
-  public void primitiveListWithSameNameTagsTest() throws JsonSyntaxException, JsonIOException, FileNotFoundException {
+  public void primitiveListWithSameNameTagsTest() {
     final ListWithHeader listWithHeader =
         new GsonXmlBuilder()
         .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
@@ -208,8 +206,7 @@ public class ListsTest extends AbstractXmlTest {
     assertTrue(places.places.isEmpty());
   }
 
-  // currently we cannot parse this case
-  @Test(expected = JsonSyntaxException.class)
+  @Test
   public void sameNameEmptyLists() {
     final PlacesContainer places = new GsonXmlBuilder()
     .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
@@ -218,7 +215,7 @@ public class ListsTest extends AbstractXmlTest {
     .fromXml("<root><error></error><place> </place></root>", PlacesContainer.class);
 
     assertEquals("", places.error);
-    assertTrue(places.places.isEmpty());
+    assertEquals(1, places.places.size());
   }
 
   @Test
@@ -238,6 +235,55 @@ public class ListsTest extends AbstractXmlTest {
       .fromXml("<root></root>", new TypeToken<List<String>>() { }.getType());
 
     assertTrue(empty.isEmpty());
+  }
+
+  /** Container with 2 lists. */
+  public static class TwoListPlacesContainer {
+    @SerializedName("p1")
+    List<Place> places1;
+    @SerializedName("p2")
+    List<Place> places2;
+  }
+
+  @Test
+  public void twoListsAsSameNamesFirstEmpty() {
+    final TwoListPlacesContainer places = new GsonXmlBuilder()
+        .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+        .setSameNameLists(true)
+        .create()
+        .fromXml("<root> <p1></p1> <p1 id=\"2\" /> <p2></p2> </root>", TwoListPlacesContainer.class);
+    assertEquals(2, places.places1.size());
+    assertEquals(1, places.places2.size());
+    assertEquals(2, places.places1.get(1).id);
+  }
+
+  @Test
+  public void twoListsAsSameNamesFirstNotEmpty() {
+    final TwoListPlacesContainer places = new GsonXmlBuilder()
+        .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+        .setSameNameLists(true)
+        .create()
+        .fromXml("<root> <p1 id=\"2\" /> <p1></p1> <p2></p2> <p2 id=\"3\"></p2> </root>", TwoListPlacesContainer.class);
+    assertEquals(2, places.places1.size());
+    assertEquals(2, places.places2.size());
+    assertEquals(2, places.places1.get(0).id);
+    assertEquals(3, places.places2.get(1).id);
+  }
+
+  @Test
+  public void twoListsAsGroupElement() {
+    final TwoListPlacesContainer places = new GsonXmlBuilder()
+        .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+        .create()
+        .fromXml("<root> <p1><item/><item id=\"2\" /></p1> <p2><item/></p2> </root>", TwoListPlacesContainer.class);
+    assertEquals(2, places.places1.size());
+    assertEquals(2, places.places1.get(1).id);
+    assertEquals(1, places.places2.size());
+  }
+
+  @Test
+  public void issue() {
+
   }
 
 }
