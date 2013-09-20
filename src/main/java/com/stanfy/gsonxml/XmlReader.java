@@ -21,19 +21,26 @@ public class XmlReader extends JsonReader {
   /** Scope. */
   private static enum Scope {
     /** We are inside an object. Next token should be {@link JsonToken#NAME} or {@link JsonToken#END_OBJECT}. */
-    INSIDE_OBJECT,
+    INSIDE_OBJECT(false),
     /** We are inside an array. Next token should be {@link JsonToken#BEGIN_OBJECT} or {@link JsonToken#END_ARRAY}. */
-    INSIDE_ARRAY,
+    INSIDE_ARRAY(true),
     /** We are inside automatically added array. Next token should be {@link JsonToken#BEGIN_OBJECT} or {@link JsonToken#END_ARRAY}. */
-    INSIDE_EMBEDDED_ARRAY,
+    INSIDE_EMBEDDED_ARRAY(true),
     /** We are inside primitive embedded array. Child scope can be #PRIMITIVE_VALUE only. */
-    INSIDE_PRIMITIVE_EMBEDDED_ARRAY,
+    INSIDE_PRIMITIVE_EMBEDDED_ARRAY(true),
     /** We are inside primitive array. Child scope can be #PRIMITIVE_VALUE only. */
-    INSIDE_PRIMITIVE_ARRAY,
+    INSIDE_PRIMITIVE_ARRAY(true),
     /** We are inside primitive value. Next token should be {@link JsonToken#STRING} or {@link JsonToken#END_ARRAY}. */
-    PRIMITIVE_VALUE,
+    PRIMITIVE_VALUE(false),
     /** New start tag met, we returned {@link JsonToken#NAME}. Object, array, or value can go next. */
-    NAME
+    NAME(false);
+
+    /** Inside array flag. */
+    final boolean insideArray;
+
+    private Scope(final boolean insideArray) {
+      this.insideArray = insideArray;
+    }
   }
 
   /** XML parser. */
@@ -63,8 +70,8 @@ public class XmlReader extends JsonReader {
 
   /** Stack of scopes. */
   private final Stack<Scope> scopeStack = new Stack<Scope>();
-  /** Stack of names. */
-  private final Stack<String> nameStack = new Stack<String>();
+  /** Stack of last closed tags. */
+  private final Stack<ClosedTag> closeStack = new Stack<ClosedTag>();
 
   /** Current token. */
   private JsonToken token;
@@ -95,17 +102,17 @@ public class XmlReader extends JsonReader {
   }
 
   @SuppressWarnings("unused")
-  private void dump(final boolean showToken) {
-    System.out.println(scopeStack);
-    System.out.println(nameStack);
-
-    if (showToken) {
-      System.out.print(token + ", ");
-    }
-    System.out.println(tokensQueueStart);
-    System.out.println(valuesQueueStart);
-    System.out.println("----------------------");
+  private CharSequence dump() {
+    return new StringBuilder()
+      .append("Scopes: ").append(scopeStack).append('\n')
+      .append("Closed tags: ").append(closeStack).append('\n')
+      .append("Token: ").append(token).append('\n')
+      .append("Tokens queue: ").append(tokensQueueStart).append('\n')
+      .append("Values queue: ").append(valuesQueueStart).append('\n');
   }
+
+  @Override
+  public String toString() { return "--- XmlReader ---\n" + dump(); }
 
   private JsonToken peekNextToken() { return tokensQueueStart != null ? tokensQueueStart.token : null; }
 
@@ -133,7 +140,7 @@ public class XmlReader extends JsonReader {
   private void expect(final JsonToken token) throws IOException {
     final JsonToken actual = peek();
     this.token = null;
-    if (actual != token) { throw new IllegalStateException(token + " expected, but met " + actual); }
+    if (actual != token) { throw new IllegalStateException(token + " expected, but met " + actual + "\n" + dump()); }
   }
 
   @Override
@@ -248,14 +255,14 @@ public class XmlReader extends JsonReader {
           pushToQueue(JsonToken.STRING);
           scopeStack.push(Scope.INSIDE_PRIMITIVE_EMBEDDED_ARRAY);
         } else {
-          // ignore the value
+          // pass value as a text node inside of an object
           String value = nextValue().value;
-          if (value.length() != 0) {
-            throw new JsonSyntaxException("String value '" + value + "' inside of non-primitive array");
-          }
-          // we have an empty object inside of an array
           pushToQueue(JsonToken.END_OBJECT);
+          pushToQueue(JsonToken.STRING);
+          pushToQueue(JsonToken.NAME);
           pushToQueue(JsonToken.BEGIN_OBJECT);
+          pushToQueue(value);
+          pushToQueue("$");
           scopeStack.push(Scope.INSIDE_EMBEDDED_ARRAY);
         }
 
@@ -424,6 +431,19 @@ public class XmlReader extends JsonReader {
       valuesQueue = valueRef;
     }
   }
+  private void pushToQueue(final String value) {
+    final ValueRef valueRef = valuesPool.get();
+    valueRef.value = value;
+    valueRef.next = null;
+
+    if (valuesQueueStart == null) {
+      valuesQueue = valueRef;
+      valuesQueueStart = valueRef;
+    } else {
+      valueRef.next = valuesQueueStart;
+      valuesQueueStart = valueRef;
+    }
+  }
   private void addToQueue(final AttributesData attrData) throws IOException, XmlPullParserException {
     final int count = attrData.count;
     for (int i = 0; i < count; i++) {
@@ -448,8 +468,6 @@ public class XmlReader extends JsonReader {
 
       mustRepeat = false;
 
-//      System.out.println(xml);
-
       switch (xml.type) {
       case START_TAG:
         if (firstStart) {
@@ -467,8 +485,6 @@ public class XmlReader extends JsonReader {
         break;
       default:
       }
-
-//      dump(false);
 
       if (!mustRepeat && skipping) { break; }
     }
@@ -510,6 +526,20 @@ public class XmlReader extends JsonReader {
     boolean processTagName = true;
 
     Scope lastScope = scopeStack.peek();
+
+    if (options.sameNameList && lastScope.insideArray && closeStack.size() > 0) {
+      ClosedTag lastClosedInfo = closeStack.peek();
+      if (lastClosedInfo.depth == xmlParser.getDepth()) {
+        String currentName = options.namespaces ? xml.getName(xmlParser) : xml.name;
+        if (!currentName.equals(lastClosedInfo.name)) {
+          // close the previous array
+          addToQueue(JsonToken.END_ARRAY);
+          fixScopeStack();
+          lastScope = scopeStack.peek();
+        }
+      }
+    }
+
     switch (lastScope) {
 
     case INSIDE_PRIMITIVE_ARRAY:
@@ -590,7 +620,7 @@ public class XmlReader extends JsonReader {
     scopeStack.fix(Scope.NAME);
   }
 
-  private void processEnd(final XmlTokenInfo xml) {
+  private void processEnd(final XmlTokenInfo xml) throws IOException, XmlPullParserException {
     switch (scopeStack.peek()) {
 
     case INSIDE_OBJECT:
@@ -626,6 +656,21 @@ public class XmlReader extends JsonReader {
 
     default:
       // nothing
+    }
+
+    if (options.sameNameList) {
+      int stackSize = xmlParser.getDepth();
+      final String name = options.namespaces ? xml.getName(xmlParser) : xml.name;
+      final Stack<ClosedTag> closeStack = this.closeStack;
+      boolean nameChange = false;
+      while (closeStack.size() > 0 && closeStack.peek().depth > stackSize) {
+        closeStack.drop();
+      }
+      if (closeStack.size() == 0 || closeStack.peek().depth < stackSize) {
+        closeStack.push(new ClosedTag(stackSize, name));
+      } else {
+        closeStack.peek().name = name;
+      }
     }
   }
 
@@ -731,6 +776,22 @@ public class XmlReader extends JsonReader {
   public static class Options {
     /** Options. */
     boolean primitiveArrays, skipRoot, sameNameList, namespaces, rootArrayPrimitive;
+  }
+
+  /** Closed tag data. */
+  private static class ClosedTag {
+    int depth;
+    String name;
+
+    public ClosedTag(final int depth, final String name) {
+      this.depth = depth;
+      this.name = name;
+    }
+
+    @Override
+    public String toString() {
+      return "'" + name + "'/" + depth;
+    }
   }
 
   /** Pool for  */

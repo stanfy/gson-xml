@@ -83,7 +83,10 @@ final class Stack<T> {
   public String toString() {
     StringBuilder res = new StringBuilder();
     for (int i = 0; i < size; i++) {
-      res.append(array[i]).append(' ');
+      res.append(array[i]).append('>');
+    }
+    if (res.length() > 0) {
+      res.delete(res.length() - 1, res.length());
     }
     return res.toString();
   }

@@ -246,7 +246,7 @@ public class ListsTest extends AbstractXmlTest {
   }
 
   @Test
-  public void twoListsAsSameNames() {
+  public void twoListsAsSameNamesFirstEmpty() {
     final TwoListPlacesContainer places = new GsonXmlBuilder()
         .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
         .setSameNameLists(true)
@@ -258,6 +258,19 @@ public class ListsTest extends AbstractXmlTest {
   }
 
   @Test
+  public void twoListsAsSameNamesFirstNotEmpty() {
+    final TwoListPlacesContainer places = new GsonXmlBuilder()
+        .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
+        .setSameNameLists(true)
+        .create()
+        .fromXml("<root> <p1 id=\"2\" /> <p1></p1> <p2></p2> <p2 id=\"3\"></p2> </root>", TwoListPlacesContainer.class);
+    assertEquals(2, places.places1.size());
+    assertEquals(2, places.places2.size());
+    assertEquals(2, places.places1.get(0).id);
+    assertEquals(3, places.places2.get(1).id);
+  }
+
+  @Test
   public void twoListsAsGroupElement() {
     final TwoListPlacesContainer places = new GsonXmlBuilder()
         .setXmlParserCreator(SimpleXmlReaderTest.PARSER_CREATOR)
@@ -266,6 +279,11 @@ public class ListsTest extends AbstractXmlTest {
     assertEquals(2, places.places1.size());
     assertEquals(2, places.places1.get(1).id);
     assertEquals(1, places.places2.size());
+  }
+
+  @Test
+  public void issue() {
+
   }
 
 }
