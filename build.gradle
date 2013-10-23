@@ -1,26 +1,23 @@
-apply plugin : 'java'
-apply plugin : 'eclipse'
-apply plugin : 'nexus'
-apply plugin : 'mattock'
-
 buildscript {
   repositories {
     mavenCentral()
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
   }
 
   dependencies {
     classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.2'
-    classpath 'com.stanfy.mattock:gradle-plugin:0.9.1'
+    classpath 'com.stanfy.mattock:gradle-plugin:1.0'
   }
 }
+
+apply plugin : 'java'
+apply plugin : 'mattock'
+apply plugin : 'nexus'
 
 group = 'com.stanfy'
 version = '0.1.7'
 
 repositories {
   mavenCentral()
-  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
 }
 
 dependencies {
@@ -31,6 +28,13 @@ dependencies {
   testCompile 'net.sf.kxml:kxml2:2.3.0'
   testCompile 'org.easytesting:fest-assert-core:2.0M10'
   testCompile 'org.easytesting:fest-reflect:1.4.1'
+}
+
+[tasks["compileJava"], tasks["compileTestJava"]].each {
+  it.configure {
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+  }
 }
 
 task testJar(type: Jar) {
@@ -67,4 +71,9 @@ modifyPom {
       }
     }
   }
+}
+
+mattock {
+  allDevices true
+  ignoreMissingDevices true
 }
