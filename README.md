@@ -54,7 +54,7 @@ To illustrate, this XML
 ```xml
 <person dob="01.01.1973" gender="male">
   <name>John</name>
-  Likes travelling.
+  Likes traveling.
 </person>
 ```
 can be mapped to a POJO
