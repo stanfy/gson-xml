@@ -77,3 +77,7 @@ mattock {
   allDevices true
   ignoreMissingDevices true
 }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.2.1'
+}
