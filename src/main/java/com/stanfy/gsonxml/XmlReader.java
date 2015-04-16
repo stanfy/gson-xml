@@ -269,6 +269,9 @@ public class XmlReader extends JsonReader {
       } else {
         // we have an empty list
         pushToQueue(JsonToken.END_ARRAY);
+        if (valuesQueueStart != null) {
+          nextValue();
+        }
       }
       break;
 
