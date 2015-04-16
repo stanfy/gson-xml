@@ -14,7 +14,7 @@ apply plugin : 'mattock'
 apply plugin : 'nexus'
 
 group = 'com.stanfy'
-version = '0.1.7'
+version = '0.1.8-SNAPSHOT'
 
 repositories {
   mavenCentral()
