@@ -85,6 +85,10 @@ public class GsonXml {
    * of type {@code typeOfT}.
    * Since Type is not parameterized by T, this method is type unsafe and should be used carefully
    *
+   * @return deserialized object
+   * @param <T> type to deserialize
+   * @param reader XML source
+   * @param typeOfT type to deserialize
    * @throws JsonIOException if there was a problem writing to the Reader
    * @throws JsonSyntaxException if json is not a valid representation for an object of type
    */
