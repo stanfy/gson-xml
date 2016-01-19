@@ -47,17 +47,17 @@ public class GsonXmlBuilder {
   }
 
   /**
-   * Here's the difference.<br/>
+   * Here's the difference.<br>
    * <b>Skip root: on</b>
    * <pre>
-   *   &lt;root>&ltname>value&lt;/name>&lt;/root>
-   *   ==>
+   *   &lt;root&gt;&lt;name&gt;value&lt;/name&gt;&lt;/root&gt;
+   *   ==&gt;
    *   {name : 'value'}
    * </pre>
    * <b>Skip root: off</b>
    * <pre>
-   *   &lt;root>&ltname>value&lt;/name>&lt;/root>
-   *   ==>
+   *   &lt;root&gt;&lt;name&gt;value&lt;/name&gt;&lt;/root&gt;
+   *   ==&gt;
    *   {root : {name : 'value'}}
    * </pre>
    * @param value true to skip root element
@@ -69,17 +69,17 @@ public class GsonXmlBuilder {
   }
 
   /**
-   * Here's the difference.<br/>
+   * Here's the difference.<br>
    * <b>Treat namespaces: on</b>
    * <pre>
-   *   &lt;root>&lt;ns:name>value&lt;/ns:name>&lt;/root>
-   *   ==>
-   *   {'&lt;ns>name' : 'value'}
+   *   &lt;root&gt;&lt;ns:name&gt;value&lt;/ns:name&gt;&lt;/root&gt;
+   *   ==&gt;
+   *   {'&lt;ns&gt;name' : 'value'}
    * </pre>
    * <b>Treat namespaces: off</b>
    * <pre>
-   *   &lt;root>&lt;ns:name>value&lt;/ns:name>&lt;/root>
-   *   ==>
+   *   &lt;root&gt;&lt;ns:name&gt;value&lt;/ns:name&gt;&lt;/root&gt;
+   *   ==&gt;
    *   {name : 'value'}
    * </pre>
    * @param value true to treat namespaces
@@ -91,27 +91,27 @@ public class GsonXmlBuilder {
   }
 
   /**
-   * Here's the difference.<br/>
+   * Here's the difference.<br>
    * <b>Same name lists: on</b>
    * <pre>
-   *   &lt;root>
-   *     &lt;name>value&lt;/name>
-   *     &lt;item>value1&lt;/item>
-   *     &lt;item>value2&lt;/item>
-   *   &lt;/root>
-   *   ==>
+   *   &lt;root&gt;
+   *     &lt;name&gt;value&lt;/name&gt;
+   *     &lt;item&gt;value1&lt;/item&gt;
+   *     &lt;item&gt;value2&lt;/item&gt;
+   *   &lt;/root&gt;
+   *   ==&gt;
    *   {name : 'value', item : ['value1', 'value2']}
    * </pre>
    * <b>Treat namespaces: off</b>
    * <pre>
-   *   &lt;root>
-   *     &lt;name>value&lt;/name>
-   *     &lt;items>
-   *       &lt;ignored>value1&lt;/ignored>
-   *       &lt;ignored>value2&lt;/ignored>
-   *     &lt;/items>
-   *   &lt;/root>
-   *   ==>
+   *   &lt;root&gt;
+   *     &lt;name&gt;value&lt;/name&gt;
+   *     &lt;items&gt;
+   *       &lt;ignored&gt;value1&lt;/ignored&gt;
+   *       &lt;ignored&gt;value2&lt;/ignored&gt;
+   *     &lt;/items&gt;
+   *   &lt;/root&gt;
+   *   ==&gt;
    *   {name : 'value', items : ['value1', 'value2']}
    * </pre>
    * @param value true for same name list policy
@@ -126,13 +126,13 @@ public class GsonXmlBuilder {
    * If set to true than arrays can contain primitive values. If false only arrays can contain objects only.
    * When set to true you cannot parse the next sample:
    * <pre>
-   *   &lt;list>
-   *     &lt;item>
+   *   &lt;list&gt;
+   *     &lt;item&gt;
    *       text node value
-   *       &lt;field-name>field value&lt;/field-name>
-   *     &lt;/item>
-   *     &lt;item>value2&lt;/item>
-   *   &lt;/list>
+   *       &lt;field-name&gt;field value&lt;/field-name&gt;
+   *     &lt;/item&gt;
+   *     &lt;item&gt;value2&lt;/item&gt;
+   *   &lt;/list&gt;
    * </pre>
    * It's caused by the fact that parser meats 'text node value' and makes a decision that this item is primitive.
    * @param primitiveArrays value for primitive arrays policy
