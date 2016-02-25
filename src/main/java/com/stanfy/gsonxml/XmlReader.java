@@ -309,7 +309,7 @@ public class XmlReader extends JsonReader {
   @Override
   public String nextString() throws IOException {
     expect(JsonToken.STRING);
-    return nextValue().value;
+    return GsonXml.decode(nextValue().value);
   }
   @Override
   public boolean nextBoolean() throws IOException {
