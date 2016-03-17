@@ -176,8 +176,7 @@ public class GsonXmlBuilder {
     }
 
     /**
-     * &lt; to <
-     *
+     * @param decodeString charset
      * @return this instance for chaining
      */
     public GsonXmlBuilder setDecodeString(final boolean decodeString) {

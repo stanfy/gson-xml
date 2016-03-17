@@ -26,7 +26,7 @@ public class RssTest extends AbstractXmlTest {
     + "    <item>\n"
     + "      <id>1</id>\n"
     + "      <pubDate><![CDATA[Tue, 10 Jul 2012 10:43:36 +0300]]></pubDate>\n"
-    + "      <title><![CDATA[Some text&lt;&quot;]]></title>\n"
+    + "      <title><![CDATA[Some text]]></title>\n"
     + "    </item>\n"
     + "    <item>\n"
     + "      <title/>"
@@ -58,7 +58,7 @@ public class RssTest extends AbstractXmlTest {
   public void rssTest() throws Exception {
     final Rss feed = createGsonXml().fromXml(XML, Rss.class);
     assertEquals(1, feed.channel.items.get(0).id);
-      assertEquals("Some text<\"", feed.channel.items.get(0).title);
+      assertEquals("Some text", feed.channel.items.get(0).title);
       assertEquals("channel title<", feed.channel.title);
     assertEquals(new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US).parse("Tue, 10 Jul 2012 10:43:36 +0300"), feed.channel.items.get(0).pubDate);
   }
