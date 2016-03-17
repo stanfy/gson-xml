@@ -1,10 +1,5 @@
 package com.stanfy.gsonxml;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.lang.reflect.Type;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
@@ -14,12 +9,18 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.MalformedJsonException;
 import com.stanfy.gsonxml.XmlReader.Options;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.lang.reflect.Type;
+
 /**
  * Wrapper for {@link Gson}.
  * @author Roman Mazur (Stanfy - http://stanfy.com)
  */
 public class GsonXml {
-
+    public static final String[] CHAR_ORIGINAL = new String[]{"$", "<", ">", "\"", "'"};
+    public static final String[] CHAR_TO = new String[]{"&amp;", "&lt;", "&gt;", "&quot;", "&apos;"};
   /** Core object. */
   private final Gson core;
 
@@ -95,7 +96,19 @@ public class GsonXml {
   public <T> T fromXml(final XmlReader reader, final Type typeOfT) throws JsonIOException, JsonSyntaxException {
     return core.fromJson(reader, typeOfT);
   }
-
+    /**
+     * @param value
+     * @return
+     */
+    static String decode(String value) {
+        if (value == null) return null;
+        for (int i = 0; i < CHAR_TO.length && i < CHAR_ORIGINAL.length; i++) {
+            String to = CHAR_TO[i];
+            String original = CHAR_ORIGINAL[i];
+            value = value.replace(to, original);
+        }
+        return value;
+    }
   @Override
   public String toString() { return core.toString(); }
 

@@ -19,4 +19,4 @@ classes
 
 # Other
 /nbproject/private/
-internal
+/*.properties

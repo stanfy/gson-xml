@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import com.stanfy.gsonxml.GsonXml;
 import com.stanfy.gsonxml.GsonXmlBuilder;
 import com.stanfy.gsonxml.XmlParserCreator;
-import junit.framework.Assert;
+
 import org.junit.Test;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
  * Issue #7.
  * https://github.com/stanfy/gson-xml/issues/7
  */
+@SuppressWarnings("deprecation")
 public class Issue7 {
 
   static class A {
